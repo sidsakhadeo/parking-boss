@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  parking-boss:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: parking-boss-app
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount the db directory from host to container
+      - ./db:/app/db:ro  # read-only mount for security
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/reservations"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - parking-boss-network
+
+networks:
+  parking-boss-network:
+    driver: bridge
+
+# Optional: if you want to use a named volume instead of bind mount
+# volumes:
+#   parking-boss-data:
+#     driver: local
