@@ -15,7 +15,7 @@ export default function Vehicle({ id, vehicle, onReserve }: VehicleProps) {
   return (
     <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
       <h2 className="text-xl font-semibold mb-2">{vehicle.displayValue}</h2>
-      <div className="space-y-1 text-sm text-gray-600 mb-4">
+      <div className="space-y-1 text-sm text-gray-400 mb-4">
         <p>
           <span className="font-medium">Owner:</span> {vehicle.name}
         </p>
