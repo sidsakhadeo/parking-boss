@@ -91,12 +91,6 @@ docker build -t parking-boss .
 docker run -p 3000:3000 -v $(pwd)/db:/app/db parking-boss
 ```
 
-### Docker Compose Files
-
-- `docker-compose.yml` - Main configuration
-- `docker-compose.override.yml` - Development overrides (auto-loaded)
-- `docker-compose.prod.yml` - Production overrides
-
 ## API Endpoints
 
 ### Vehicles
@@ -198,28 +192,12 @@ Key query keys:
 The application includes health check endpoints:
 - `GET /api/reservations` - Used by Docker health checks
 
-### Resource Management
-
-Production deployment includes:
-- CPU limits (1.0 core max, 0.5 core reserved)
-- Memory limits (512MB max, 256MB reserved)
-- Log rotation (10MB max, 3 files)
-
-### Security
-
-- Read-only database mounts in production
-- Non-root user execution
-- Minimal attack surface with Alpine Linux
-
 ## Monitoring
 
 ### Logs
 
 View application logs:
 ```bash
-# Docker Compose
-docker-compose logs -f parking-boss
-
 # Docker
 docker logs -f <container-id>
 ```
@@ -230,49 +208,3 @@ Check application health:
 ```bash
 curl http://localhost:3000/api/reservations
 ```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Port already in use**
-   ```bash
-   # Kill process on port 3000
-   lsof -ti:3000 | xargs kill -9
-   ```
-
-2. **Database files not found**
-   - Ensure `db/vehicles.json` and `db/config.json` exist
-   - Check volume mount permissions
-
-3. **Build errors**
-   ```bash
-   # Clean install
-   rm -rf node_modules package-lock.json
-   npm install
-   ```
-
-4. **Docker permission issues**
-   ```bash
-   # Fix ownership
-   sudo chown -R $USER:$USER db/
-   ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests and linting
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
-
-## Support
-
-For issues and questions:
-1. Check the troubleshooting section
-2. Review the logs for error messages
-3. Create an issue in the repository
