@@ -127,7 +127,7 @@ export async function GET() {
     >;
 
     const validPermitsKeys = Object.keys(items).filter(
-      (key) => items[key]!.title === VALID_PERMIT_TITLE,
+      (key) => items[key]?.title === VALID_PERMIT_TITLE,
     );
 
     const result: Reservation[] = [];
@@ -135,7 +135,7 @@ export async function GET() {
     validPermitsKeys.forEach((key) => {
       const obj = Object.assign(
         {},
-        { ...vehicles[items[key]!.vehicle] },
+        { ...vehicles[items[key]?.vehicle] },
         { ...items[key] },
       ) as Reservation;
 
@@ -155,7 +155,7 @@ export async function GET() {
       reservations: result,
       count: result.length,
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

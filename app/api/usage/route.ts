@@ -45,9 +45,9 @@ const getUsageLabel = (
   limitObj: LimitItemPartialSchema,
 ): string => {
   const limitObjId = limitObj.id;
-  const usageObj = usageItems[limitObjId]!.used;
-  const key = Object.keys(usageObj)[0]!;
-  const usage = usageObj[key]!.display;
+  const usageObj = usageItems[limitObjId]?.used;
+  const key = Object.keys(usageObj)[0];
+  const usage = usageObj[key]?.display;
   const result = getUntilFirstSpace(usage);
   return result;
 };
@@ -94,7 +94,7 @@ export async function GET() {
     let monthlyLimit: LimitItemPartialSchema | undefined;
 
     for (const limitItemKey in limitItems) {
-      const limitItem = limitItems[limitItemKey]!;
+      const limitItem = limitItems[limitItemKey];
       if (limitItem.per === "P1W") {
         weeklyLimit = {
           id: limitItem.id,
@@ -120,7 +120,7 @@ export async function GET() {
       weeklyUsage,
       monthlyUsage,
     });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

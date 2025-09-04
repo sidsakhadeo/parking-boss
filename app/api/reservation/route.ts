@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       { message: "Reservation created successfully" },
       { status: 201 },
     );
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
@@ -72,7 +72,7 @@ export async function DELETE(request: NextRequest) {
       { message: "Reservation cancelled successfully" },
       { status: 200 },
     );
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

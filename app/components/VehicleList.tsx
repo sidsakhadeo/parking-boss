@@ -88,7 +88,7 @@ export default function VehicleList() {
     }
 
     const query = searchQuery.toLowerCase();
-    return vehicles.filter(([id, vehicle]) => {
+    return vehicles.filter(([_id, vehicle]) => {
       return (
         vehicle.displayValue.toLowerCase().includes(query) ||
         vehicle.name.toLowerCase().includes(query) ||
