@@ -58,7 +58,7 @@ export default function Usage() {
   }
 
   return (
-    <div className="p-8 border-b">
+    <section className="p-8 border-b">
       <div className="max-w-4xl mx-auto">
         <h2 className="text-2xl font-bold mb-4">Usage Statistics</h2>
 
@@ -90,6 +90,6 @@ export default function Usage() {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

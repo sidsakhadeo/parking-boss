@@ -100,11 +100,9 @@ export default function VehicleList() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen p-8">
+      <div className="p-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">
-            Parking Boss - Vehicle List
-          </h1>
+          <h2 className="text-2xl font-bold mb-4">Available Vehicles</h2>
           <div className="text-gray-500">Loading vehicles...</div>
         </div>
       </div>
@@ -113,11 +111,9 @@ export default function VehicleList() {
 
   if (error) {
     return (
-      <div className="min-h-screen p-8">
+      <div className="p-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">
-            Parking Boss - Vehicle List
-          </h1>
+          <h2 className="text-2xl font-bold mb-4">Available Vehicles</h2>
           <div className="text-red-500">
             Error:{" "}
             {error instanceof Error ? error.message : "An error occurred"}
@@ -128,9 +124,9 @@ export default function VehicleList() {
   }
 
   return (
-    <div className="min-h-screen p-8">
+    <section className="p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">Parking Boss - Vehicle List</h1>
+        <h2 className="text-2xl font-bold mb-8">Available Vehicles</h2>
 
         <div className="mb-6">
           <input
@@ -165,6 +161,6 @@ export default function VehicleList() {
             : `Total vehicles: ${vehicles.length}`}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
