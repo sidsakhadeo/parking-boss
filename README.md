@@ -21,7 +21,7 @@ A modern parking reservation management system built with Next.js 15, React Quer
 - **Build Tool**: Turbopack
 - **Linting**: Biome
 - **Runtime**: Node.js 22
-- **Containerization**: Docker & Docker Compose
+- **Containerization**: Docker
 
 ## Getting Started
 
@@ -45,9 +45,7 @@ A modern parking reservation management system built with Next.js 15, React Quer
    ```
 
 3. **Set up the database**
-   Ensure the `db/` directory contains:
-   - `vehicles.json` - Vehicle database
-   - `config.json` - API configuration
+   See the [Database Setup](#database-setup) section below for detailed configuration.
 
 4. **Start the development server**
    ```bash
@@ -67,19 +65,63 @@ npm run lint     # Run Biome linter
 npm run format   # Format code with Biome
 ```
 
+## Database Setup
+
+The application requires two JSON configuration files in the `db/` directory:
+
+### 1. Create `db/config.json`
+
+Copy the example file and customize it for your setup:
+
+```bash
+cp db/config.example.json db/config.json
+```
+
+The configuration file should contain the following fields:
+
+```json
+{
+  "location": "dt6bff9y0d7kx5vbpqe00gk5j8",
+  "policy": "6yzx3t97811m7ba90x5qksvdcc",
+  "tenant": "",
+  "token": "",
+  "space": "GUEST",
+  "duration": "",
+  "email": "",
+  "tel": ""
+}
+```
+
+**Configuration Fields:**
+
+- **`location`**: DO NOT CHANGE - Parking location identifier (unique ID for the parking facility)
+- **`policy`**: DO NOT CHANGE - Parking policy identifier (defines rules and restrictions for the location)
+- **`tenant`**: Condo value (e.g. "BLD99 UNIT 40")
+- **`token`**: 4-digit password
+- **`space`**: DO NOT CHANGE - Default space type
+- **`duration`**: Default reservation duration. Format "PT4H" for 4 hours
+- **`email`**: The email used in Parking Boss
+- **`tel`**: The mobile number used in Parking Boss
+
+### 2. Create `db/vehicles.json`
+
+This file contains your vehicle database. You can copy from the example:
+
+```bash
+cp db/vehicles.example.json db/vehicles.json
+```
+
+The vehicles file should contain an object with vehicle IDs as keys and vehicle information as values.
+
+### Database File Security
+
+Both configuration files are automatically ignored by git (see `.gitignore`) to prevent sensitive information from being committed to version control. Make sure to:
+
+1. Keep your `db/config.json` secure and never commit it to version control
+2. Share example files only (`db/config.example.json` and `db/vehicles.example.json`)
+3. Update the example files when adding new configuration options
+
 ## Docker Deployment
-
-### Quick Start with Docker Compose
-
-1. **Development**
-   ```bash
-   docker-compose up --build
-   ```
-
-2. **Production**
-   ```bash
-   docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-   ```
 
 ### Manual Docker Commands
 
@@ -130,9 +172,6 @@ parking-boss/
 │   ├── vehicles.json           # Vehicle data
 │   └── config.json             # API configuration
 ├── public/                     # Static assets
-├── docker-compose.yml          # Main Docker Compose config
-├── docker-compose.override.yml # Development overrides
-├── docker-compose.prod.yml     # Production overrides
 ├── Dockerfile                  # Container definition
 ├── next.config.ts              # Next.js configuration
 ├── tailwind.config.ts          # Tailwind configuration
