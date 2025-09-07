@@ -123,6 +123,21 @@ Both configuration files are automatically ignored by git (see `.gitignore`) to 
 
 ## Docker Deployment
 
+The application is fully containerized and ready for deployment.
+
+### Using Docker Compose (Recommended)
+
+```bash
+# Start the application
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the application
+docker-compose down
+```
+
 ### Manual Docker Commands
 
 ```bash
@@ -131,7 +146,35 @@ docker build -t parking-boss .
 
 # Run with volume mount
 docker run -p 3000:3000 -v $(pwd)/db:/app/db parking-boss
+
+# Run with custom environment variables
+docker run -p 3000:3000 \
+  -v $(pwd)/db:/app/db \
+  -e NODE_ENV=production \
+  -e NEXT_TELEMETRY_DISABLED=1 \
+  parking-boss
 ```
+
+### Docker Configuration
+
+The Docker setup includes:
+- **Multi-stage build** for optimal image size
+- **Non-root user** for security
+- **Health checks** for container monitoring  
+- **Volume mounting** for persistent database files
+
+### Volume Mounting
+
+The container expects a volume mount for the database directory:
+```bash
+# Local development
+-v $(pwd)/db:/app/db
+
+# Production with named volume
+-v parking_db:/app/db
+```
+
+Make sure your `db/config.json` and `db/vehicles.json` files are properly configured before running the container.
 
 ## API Endpoints
 
