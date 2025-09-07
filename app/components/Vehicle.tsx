@@ -13,8 +13,8 @@ interface VehicleProps {
 
 export default function Vehicle({ id, vehicle, onReserve }: VehicleProps) {
   return (
-    <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-      <h2 className="text-xl font-semibold mb-2">{vehicle.displayValue}</h2>
+    <div className="border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
+      <h2 className="text-lg sm:text-xl font-semibold mb-2">{vehicle.displayValue}</h2>
       <div className="space-y-1 text-sm text-gray-400 mb-4">
         <p>
           <span className="font-medium">Owner:</span> {vehicle.name}
@@ -30,7 +30,7 @@ export default function Vehicle({ id, vehicle, onReserve }: VehicleProps) {
       <button
         type="button"
         onClick={() => onReserve(id)}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+        className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium py-3 px-4 rounded-lg transition-colors touch-manipulation"
       >
         Reserve
       </button>

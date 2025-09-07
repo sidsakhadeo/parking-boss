@@ -26,9 +26,9 @@ export default function CurrentReservations() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4">Current Reservations</h2>
+      <div className="p-4 sm:p-6 md:p-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Current Reservations</h2>
           <div className="text-gray-500">Loading reservations...</div>
         </div>
       </div>
@@ -37,9 +37,9 @@ export default function CurrentReservations() {
 
   if (error) {
     return (
-      <div className="p-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4">Current Reservations</h2>
+      <div className="p-4 sm:p-6 md:p-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Current Reservations</h2>
           <div className="text-red-500">
             Error:{" "}
             {error instanceof Error ? error.message : "An error occurred"}
@@ -50,14 +50,14 @@ export default function CurrentReservations() {
   }
 
   return (
-    <section className="p-8 border-b">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold mb-4">Current Reservations</h2>
+    <section className="p-4 sm:p-6 md:p-8 border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4">Current Reservations</h2>
 
         {reservations.length === 0 ? (
           <div className="text-gray-500">No current reservations</div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {reservations.map((reservation) => (
               <CurrentReservation
                 key={reservation.id}

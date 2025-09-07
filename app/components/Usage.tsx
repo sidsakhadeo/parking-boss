@@ -30,9 +30,9 @@ export default function Usage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4">Usage Statistics</h2>
+      <div className="p-4 sm:p-6 md:p-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Usage Statistics</h2>
           <div className="text-gray-500">Loading usage data...</div>
         </div>
       </div>
@@ -41,9 +41,9 @@ export default function Usage() {
 
   if (error) {
     return (
-      <div className="p-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4">Usage Statistics</h2>
+      <div className="p-4 sm:p-6 md:p-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Usage Statistics</h2>
           <div className="text-red-500">
             Error:{" "}
             {error instanceof Error ? error.message : "An error occurred"}
@@ -58,11 +58,11 @@ export default function Usage() {
   }
 
   return (
-    <section className="p-8 border-b">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold mb-4">Usage Statistics</h2>
+    <section className="p-4 sm:p-6 md:p-8 border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4">Usage Statistics</h2>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
           <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
             <h3 className="font-semibold text-blue-800 mb-2">Weekly Usage</h3>
             <div className="space-y-1 text-sm text-blue-700">

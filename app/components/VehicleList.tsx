@@ -100,9 +100,9 @@ export default function VehicleList() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4">Available Vehicles</h2>
+      <div className="p-4 sm:p-6 md:p-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Available Vehicles</h2>
           <div className="text-gray-500">Loading vehicles...</div>
         </div>
       </div>
@@ -111,9 +111,9 @@ export default function VehicleList() {
 
   if (error) {
     return (
-      <div className="p-8">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4">Available Vehicles</h2>
+      <div className="p-4 sm:p-6 md:p-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Available Vehicles</h2>
           <div className="text-red-500">
             Error:{" "}
             {error instanceof Error ? error.message : "An error occurred"}
@@ -124,21 +124,22 @@ export default function VehicleList() {
   }
 
   return (
-    <section className="p-8">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-2xl font-bold mb-8">Available Vehicles</h2>
+    <section className="p-4 sm:p-6 md:p-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8">Available Vehicles</h2>
 
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <input
             type="text"
-            placeholder="Search vehicles by name, owner, license plate, or vehicle type..."
+            placeholder="Search vehicles..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-lg"
+            className="w-full px-3 py-3 sm:px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-base sm:text-lg"
+            inputMode="search"
           />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredVehicles.map(([id, vehicle]) => (
             <Vehicle
               key={id}
