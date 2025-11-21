@@ -4,9 +4,9 @@ import type { Config } from "@/app/api/config/route";
 import { makeFetch } from "@/app/utils/makeFetch";
 import { getUntilFirstSpace } from "@/app/utils/string";
 import { getViewpoint } from "@/app/utils/viewpoint";
+import { API_DOMAIN } from "../constants";
 
-const CURENT_RESERVATIONS_TOKENS_URL =
-  "https://api.parkingboss.com/v1/accounts/auth/tokens";
+const CURENT_RESERVATIONS_TOKENS_URL = `https://${API_DOMAIN}/v1/accounts/auth/tokens`;
 const limitItemSchema = z.object({
   display: z.string(),
   id: z.string(),
@@ -78,7 +78,7 @@ export async function GET() {
     );
 
     const checkUsageURL = new URL(
-      `https://api.parkingboss.com/v1/locations/${config.location}/tenants/${subject}/permits/temporary/usage`,
+      `https://${API_DOMAIN}/v1/locations/${config.location}/tenants/${subject}/permits/temporary/usage`,
     );
 
     checkUsageURL.searchParams.append("viewpoint", viewpoint);

@@ -3,8 +3,9 @@ import z from "zod";
 import type { Config } from "@/app/api/config/route";
 import { makeFetch, makePut } from "@/app/utils/makeFetch";
 import { getViewpoint } from "@/app/utils/viewpoint";
+import { API_DOMAIN } from "../constants";
 
-const RESERVE_URL = "https://api.parkingboss.com/v1/permits/temporary";
+const RESERVE_URL = `https://${API_DOMAIN}/v1/permits/temporary`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,9 +59,7 @@ export async function DELETE(request: NextRequest) {
     }
     const config: Config = await configResponse.json();
 
-    const expiryURL = new URL(
-      `https://api.parkingboss.com/v1/permits/${id}/expires`,
-    );
+    const expiryURL = new URL(`https://${API_DOMAIN}/v1/permits/${id}/expires`);
 
     expiryURL.searchParams.append("viewpoint", viewpoint);
     expiryURL.searchParams.append("permit", id);
