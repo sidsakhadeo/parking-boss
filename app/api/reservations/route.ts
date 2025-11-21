@@ -5,9 +5,9 @@ import z from "zod";
 import type { Config } from "@/app/api/config/route";
 import { makeFetch } from "@/app/utils/makeFetch";
 import { getViewpoint } from "@/app/utils/viewpoint";
+import { API_DOMAIN } from "../constants";
 
-const CURENT_RESERVATIONS_TOKENS_URL =
-  "https://api.parkingboss.com/v1/accounts/auth/tokens";
+const CURENT_RESERVATIONS_TOKENS_URL = `https://${API_DOMAIN}/v1/accounts/auth/tokens`;
 const VALID_PERMIT_TITLE = "Guest Parking";
 
 export type Reservation = {
@@ -89,7 +89,7 @@ export async function GET() {
     );
 
     const currentReservationsURL = new URL(
-      `https://api.parkingboss.com/v1/locations/${config.location}/tenants/${subject}/permits`,
+      `https://${API_DOMAIN}/v1/locations/${config.location}/tenants/${subject}/permits`,
     );
 
     const now = new Date();
