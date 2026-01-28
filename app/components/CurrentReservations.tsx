@@ -1,8 +1,31 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Reservation } from "../api/reservations/route";
 import CurrentReservation from "./CurrentReservation";
+
+const cancelReservation = async (id: string) => {
+  const response = await fetch("/api/reservation", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ id }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "Failed to cancel reservation");
+  }
+
+  return response.json();
+};
+
+const cancelAllReservations = async (reservations: Reservation[]) => {
+  for (const reservation of reservations) {
+    await cancelReservation(reservation.id);
+  }
+};
 
 const fetchReservations = async (): Promise<{
   reservations: Reservation[];
@@ -16,6 +39,8 @@ const fetchReservations = async (): Promise<{
 };
 
 export default function CurrentReservations() {
+  const queryClient = useQueryClient();
+
   const { data, isLoading, error } = useQuery({
     queryKey: ["reservations"],
     queryFn: fetchReservations,
@@ -24,11 +49,28 @@ export default function CurrentReservations() {
 
   const reservations = data?.reservations || [];
 
+  const cancelAllMutation = useMutation({
+    mutationFn: () => cancelAllReservations(reservations),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["usage"] });
+    },
+    onError: (error: Error) => {
+      console.error("Failed to cancel all reservations:", error.message);
+    },
+  });
+
+  const handleCancelAll = () => {
+    cancelAllMutation.mutate();
+  };
+
   if (isLoading) {
     return (
       <div className="p-4 sm:p-6 md:p-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">Current Reservations</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">
+            Current Reservations
+          </h2>
           <div className="text-gray-500">Loading reservations...</div>
         </div>
       </div>
@@ -39,7 +81,9 @@ export default function CurrentReservations() {
     return (
       <div className="p-4 sm:p-6 md:p-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">Current Reservations</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">
+            Current Reservations
+          </h2>
           <div className="text-red-500">
             Error:{" "}
             {error instanceof Error ? error.message : "An error occurred"}
@@ -52,7 +96,21 @@ export default function CurrentReservations() {
   return (
     <section className="p-4 sm:p-6 md:p-8 border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4">Current Reservations</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold">
+            Current Reservations
+          </h2>
+          {reservations.length > 0 && (
+            <button
+              type="button"
+              onClick={handleCancelAll}
+              disabled={cancelAllMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+            >
+              {cancelAllMutation.isPending ? "Cancelling..." : "Cancel All"}
+            </button>
+          )}
+        </div>
 
         {reservations.length === 0 ? (
           <div className="text-gray-500">No current reservations</div>
