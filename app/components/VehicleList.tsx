@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import AddVehicleModal from "./AddVehicleModal";
 import Vehicle from "./Vehicle";
 
 interface VehicleData {
@@ -45,6 +46,7 @@ const createReservation = async (data: {
 
 export default function VehicleList() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const {
@@ -102,7 +104,9 @@ export default function VehicleList() {
     return (
       <div className="p-4 sm:p-6 md:p-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">Available Vehicles</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">
+            Available Vehicles
+          </h2>
           <div className="text-gray-500">Loading vehicles...</div>
         </div>
       </div>
@@ -113,7 +117,9 @@ export default function VehicleList() {
     return (
       <div className="p-4 sm:p-6 md:p-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">Available Vehicles</h2>
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">
+            Available Vehicles
+          </h2>
           <div className="text-red-500">
             Error:{" "}
             {error instanceof Error ? error.message : "An error occurred"}
@@ -126,7 +132,16 @@ export default function VehicleList() {
   return (
     <section className="p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8">Available Vehicles</h2>
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold">Available Vehicles</h2>
+          <button
+            type="button"
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+          >
+            Add New Vehicle
+          </button>
+        </div>
 
         <div className="mb-4 sm:mb-6">
           <input
@@ -162,6 +177,11 @@ export default function VehicleList() {
             : `Total vehicles: ${vehicles.length}`}
         </div>
       </div>
+
+      <AddVehicleModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+      />
     </section>
   );
 }
