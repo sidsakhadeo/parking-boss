@@ -9,6 +9,15 @@ interface UsageData {
   monthlyUsage: string;
 }
 
+const usageLoading = (
+  <div className="p-4 sm:p-6 md:p-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4">Usage Statistics</h2>
+      <div className="text-gray-500">Loading usage data...</div>
+    </div>
+  </div>
+);
+
 const fetchUsage = async (): Promise<UsageData> => {
   const response = await fetch("/api/usage");
   if (!response.ok) {
@@ -29,14 +38,7 @@ export default function Usage() {
   });
 
   if (isLoading) {
-    return (
-      <div className="p-4 sm:p-6 md:p-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">Usage Statistics</h2>
-          <div className="text-gray-500">Loading usage data...</div>
-        </div>
-      </div>
-    );
+    return usageLoading;
   }
 
   if (error) {

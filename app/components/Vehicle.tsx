@@ -1,4 +1,6 @@
-interface VehicleData {
+import { memo } from "react";
+
+export interface VehicleData {
   vehicle: string;
   notes: string;
   name: string;
@@ -8,10 +10,10 @@ interface VehicleData {
 interface VehicleProps {
   id: string;
   vehicle: VehicleData;
-  onReserve: (vehicleId: string) => Promise<void>;
+  onReserve: (vehicleId: string) => void;
 }
 
-export default function Vehicle({ id, vehicle, onReserve }: VehicleProps) {
+const Vehicle = memo(function Vehicle({ id, vehicle, onReserve }: VehicleProps) {
   return (
     <div className="border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
       <h2 className="text-lg sm:text-xl font-semibold mb-2">{vehicle.displayValue}</h2>
@@ -36,4 +38,6 @@ export default function Vehicle({ id, vehicle, onReserve }: VehicleProps) {
       </button>
     </div>
   );
-}
+});
+
+export default Vehicle;

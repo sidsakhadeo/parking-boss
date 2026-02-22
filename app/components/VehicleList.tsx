@@ -1,16 +1,18 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import AddVehicleModal from "./AddVehicleModal";
-import Vehicle from "./Vehicle";
+import Vehicle, { type VehicleData } from "./Vehicle";
 
-interface VehicleData {
-  vehicle: string;
-  notes: string;
-  name: string;
-  displayValue: string;
-}
+const vehicleListLoading = (
+  <div className="p-4 sm:p-6 md:p-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4">Available Vehicles</h2>
+      <div className="text-gray-500">Loading vehicles...</div>
+    </div>
+  </div>
+);
 
 const fetchVehicles = async (): Promise<{
   vehicles: Record<string, VehicleData>;
@@ -59,13 +61,15 @@ export default function VehicleList() {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const vehiclesData = vehiclesResponse?.vehicles || {};
-  const vehicles = Object.entries(vehiclesData);
+  const vehiclesData = useMemo(
+    () => vehiclesResponse?.vehicles ?? {},
+    [vehiclesResponse],
+  );
+  const vehicles = useMemo(() => Object.entries(vehiclesData), [vehiclesData]);
 
   const reservationMutation = useMutation({
     mutationFn: createReservation,
     onSuccess: () => {
-      // Invalidate and refetch reservations and usage
       queryClient.invalidateQueries({ queryKey: ["reservations"] });
       queryClient.invalidateQueries({ queryKey: ["usage"] });
     },
@@ -74,15 +78,17 @@ export default function VehicleList() {
     },
   });
 
-  const handleReserve = async (vehicleId: string) => {
-    const vehicle = vehiclesData[vehicleId];
-
-    reservationMutation.mutate({
-      vehicle: vehicle.vehicle,
-      notes: vehicle.notes,
-      name: vehicle.name,
-    });
-  };
+  const handleReserve = useCallback(
+    (vehicleId: string) => {
+      const vehicle = vehiclesData[vehicleId];
+      reservationMutation.mutate({
+        vehicle: vehicle.vehicle,
+        notes: vehicle.notes,
+        name: vehicle.name,
+      });
+    },
+    [vehiclesData, reservationMutation.mutate],
+  );
 
   const filteredVehicles = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -101,16 +107,7 @@ export default function VehicleList() {
   }, [vehicles, searchQuery]);
 
   if (isLoading) {
-    return (
-      <div className="p-4 sm:p-6 md:p-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">
-            Available Vehicles
-          </h2>
-          <div className="text-gray-500">Loading vehicles...</div>
-        </div>
-      </div>
-    );
+    return vehicleListLoading;
   }
 
   if (error) {
@@ -165,7 +162,7 @@ export default function VehicleList() {
           ))}
         </div>
 
-        {filteredVehicles.length === 0 && searchQuery && (
+        {filteredVehicles.length === 0 && !!searchQuery && (
           <div className="text-center text-gray-500 mt-8">
             No vehicles found matching "{searchQuery}"
           </div>

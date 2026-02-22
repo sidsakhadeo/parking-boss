@@ -2,30 +2,20 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Reservation } from "../api/reservations/route";
+import { cancelReservation } from "../utils/api";
 import CurrentReservation from "./CurrentReservation";
 
-const cancelReservation = async (id: string) => {
-  const response = await fetch("/api/reservation", {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ id }),
-  });
+const cancelAllReservations = (reservations: Reservation[]) =>
+  Promise.all(reservations.map((r) => cancelReservation(r.id)));
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to cancel reservation");
-  }
-
-  return response.json();
-};
-
-const cancelAllReservations = async (reservations: Reservation[]) => {
-  for (const reservation of reservations) {
-    await cancelReservation(reservation.id);
-  }
-};
+const currentReservationsLoading = (
+  <div className="p-4 sm:p-6 md:p-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4">Current Reservations</h2>
+      <div className="text-gray-500">Loading reservations...</div>
+    </div>
+  </div>
+);
 
 const fetchReservations = async (): Promise<{
   reservations: Reservation[];
@@ -65,16 +55,7 @@ export default function CurrentReservations() {
   };
 
   if (isLoading) {
-    return (
-      <div className="p-4 sm:p-6 md:p-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">
-            Current Reservations
-          </h2>
-          <div className="text-gray-500">Loading reservations...</div>
-        </div>
-      </div>
-    );
+    return currentReservationsLoading;
   }
 
   if (error) {
@@ -100,7 +81,7 @@ export default function CurrentReservations() {
           <h2 className="text-xl sm:text-2xl font-bold">
             Current Reservations
           </h2>
-          {reservations.length > 0 && (
+          {reservations.length > 0 ? (
             <button
               type="button"
               onClick={handleCancelAll}
@@ -109,7 +90,7 @@ export default function CurrentReservations() {
             >
               {cancelAllMutation.isPending ? "Cancelling..." : "Cancel All"}
             </button>
-          )}
+          ) : null}
         </div>
 
         {reservations.length === 0 ? (

@@ -1,42 +1,23 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { memo } from "react";
 import type { Reservation } from "../api/reservations/route";
+import { cancelReservation } from "../utils/api";
 
-const makeReadable = (endsAt: string): string => {
-  const endDate = new Date(endsAt);
-  const endAtHours = endDate.getHours() % 12;
-  const amOrPm = endDate.getHours() >= 12 ? " pm" : " am";
-  const endAtMins = endDate.getMinutes();
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  hour: "numeric",
+  minute: "2-digit",
+  month: "numeric",
+  day: "numeric",
+});
 
-  const endAtDate = endDate.getDate();
-  const endAtMonth = endDate.getMonth() + 1;
-
-  return `${endAtHours === 0 ? `00` : endAtHours}:${
-    endAtMins < 10 ? `0${endAtMins}` : endAtMins
-  }${amOrPm} on ${endAtMonth}/${endAtDate}`;
-};
-
-const cancelReservation = async (id: string) => {
-  const response = await fetch("/api/reservation", {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ id }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to cancel reservation");
-  }
-
-  return response.json();
-};
+const makeReadable = (dateStr: string): string =>
+  dateFormatter.format(new Date(dateStr));
 
 interface CurrentReservationProps {
   reservation: Reservation;
 }
 
-export default function CurrentReservation({
+const CurrentReservation = memo(function CurrentReservation({
   reservation,
 }: CurrentReservationProps) {
   const queryClient = useQueryClient();
@@ -73,12 +54,12 @@ export default function CurrentReservation({
           <span className="font-medium">Valid From:</span>{" "}
           {makeReadable(reservation.valid.min.local)}
         </p>
-        {reservation.valid.max && (
+        {reservation.valid.max ? (
           <p>
             <span className="font-medium">Valid Until:</span>{" "}
             {makeReadable(reservation.valid.max.local)}
           </p>
-        )}
+        ) : null}
       </div>
       <button
         type="button"
@@ -90,4 +71,6 @@ export default function CurrentReservation({
       </button>
     </div>
   );
-}
+});
+
+export default CurrentReservation;

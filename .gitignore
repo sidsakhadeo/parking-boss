@@ -38,9 +38,12 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+next-env.d.tzs
 
-#db
+# db
 db/*
 !db/config.example.json
 !db/vehicles.example.json
+
+# claude
+.claude
