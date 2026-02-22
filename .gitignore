@@ -38,7 +38,7 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.tzs
+next-env.d.ts
 
 # db
 db/*
