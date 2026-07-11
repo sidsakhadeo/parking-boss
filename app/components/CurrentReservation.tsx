@@ -1,6 +1,6 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { memo, useTransition } from "react";
-import { cancelReservation, type Reservation } from "../utils/apiClient";
+import { memo } from "react";
+import { useCancelReservation } from "../hooks/useReservationMutations";
+import type { Reservation } from "../utils/apiClient";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   hour: "numeric",
@@ -19,20 +19,9 @@ interface CurrentReservationProps {
 const CurrentReservation = memo(function CurrentReservation({
   reservation,
 }: CurrentReservationProps) {
-  const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
+  const { isPending, cancel } = useCancelReservation();
 
-  const handleCancel = () => {
-    startTransition(async () => {
-      try {
-        await cancelReservation(reservation.id);
-        queryClient.invalidateQueries({ queryKey: ["reservations"] });
-        queryClient.invalidateQueries({ queryKey: ["usage"] });
-      } catch (error) {
-        console.error("Failed to cancel reservation:", (error as Error).message);
-      }
-    });
-  };
+  const handleCancel = () => cancel(reservation.id);
 
   return (
     <div className="border border-green-200 bg-green-50 rounded-lg p-4">

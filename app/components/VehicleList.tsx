@@ -1,12 +1,10 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
-import {
-  createReservation,
-  fetchVehicles,
-} from "../utils/apiClient";
+import { useCreateReservation } from "../hooks/useReservationMutations";
+import { fetchVehicles } from "../utils/apiClient";
 import Vehicle, { type VehicleData } from "./Vehicle";
 
 const AddVehicleModal = dynamic(() => import("./AddVehicleModal"));
@@ -23,9 +21,9 @@ const vehicleListLoading = (
 export default function VehicleList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const queryClient = useQueryClient();
 
   const handleCloseModal = useCallback(() => setIsAddModalOpen(false), []);
+  const { isPending: isReserving, create } = useCreateReservation();
 
   const {
     data: vehiclesResponse,
@@ -43,27 +41,16 @@ export default function VehicleList() {
   );
   const vehicles = useMemo(() => Object.entries(vehiclesData), [vehiclesData]);
 
-  const reservationMutation = useMutation({
-    mutationFn: createReservation,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      queryClient.invalidateQueries({ queryKey: ["usage"] });
-    },
-    onError: (error: Error) => {
-      alert(`Error reserving: ${error.message}`);
-    },
-  });
-
   const handleReserve = useCallback(
     (vehicleId: string) => {
       const vehicle = vehiclesData[vehicleId];
-      reservationMutation.mutate({
+      create({
         vehicle: vehicle.vehicle,
         notes: vehicle.notes,
         name: vehicle.name,
       });
     },
-    [vehiclesData, reservationMutation.mutate],
+    [vehiclesData, create],
   );
 
   const filteredVehicles = useMemo(() => {
