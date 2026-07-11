@@ -2,32 +2,12 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { memo, useEffect, useState } from "react";
+import { addVehicle } from "../utils/apiClient";
 
 interface AddVehicleModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const addVehicle = async (data: {
-  vehicle: string;
-  notes: string;
-  name: string;
-}) => {
-  const response = await fetch("/api/vehicles", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to add vehicle");
-  }
-
-  return response.json();
-};
 
 const AddVehicleModal = memo(function AddVehicleModal({
   isOpen,

@@ -1,11 +1,7 @@
 import { memo } from "react";
+import type { VehicleData } from "../utils/apiClient";
 
-export interface VehicleData {
-  vehicle: string;
-  notes: string;
-  name: string;
-  displayValue: string;
-}
+export type { VehicleData };
 
 interface VehicleProps {
   id: string;
