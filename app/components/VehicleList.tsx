@@ -54,6 +54,8 @@ export default function VehicleList() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
+  const handleCloseModal = useCallback(() => setIsAddModalOpen(false), []);
+
   const {
     data: vehiclesResponse,
     isLoading,
@@ -180,7 +182,7 @@ export default function VehicleList() {
 
       <AddVehicleModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={handleCloseModal}
       />
     </section>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 interface AddVehicleModalProps {
   isOpen: boolean;
@@ -29,7 +29,7 @@ const addVehicle = async (data: {
   return response.json();
 };
 
-export default function AddVehicleModal({
+const AddVehicleModal = memo(function AddVehicleModal({
   isOpen,
   onClose,
 }: AddVehicleModalProps) {
@@ -165,4 +165,6 @@ export default function AddVehicleModal({
       </div>
     </div>
   );
-}
+});
+
+export default AddVehicleModal;

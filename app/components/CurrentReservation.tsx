@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { memo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { memo, useTransition } from "react";
 import type { Reservation } from "../api/reservations/route";
 import { cancelReservation } from "../utils/api";
 
@@ -21,21 +21,18 @@ const CurrentReservation = memo(function CurrentReservation({
   reservation,
 }: CurrentReservationProps) {
   const queryClient = useQueryClient();
-
-  const cancelMutation = useMutation({
-    mutationFn: cancelReservation,
-    onSuccess: () => {
-      // Invalidate and refetch reservations and usage
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      queryClient.invalidateQueries({ queryKey: ["usage"] });
-    },
-    onError: (error: Error) => {
-      console.error("Failed to cancel reservation:", error.message);
-    },
-  });
+  const [isPending, startTransition] = useTransition();
 
   const handleCancel = () => {
-    cancelMutation.mutate(reservation.id);
+    startTransition(async () => {
+      try {
+        await cancelReservation(reservation.id);
+        queryClient.invalidateQueries({ queryKey: ["reservations"] });
+        queryClient.invalidateQueries({ queryKey: ["usage"] });
+      } catch (error) {
+        console.error("Failed to cancel reservation:", (error as Error).message);
+      }
+    });
   };
 
   return (
@@ -64,10 +61,10 @@ const CurrentReservation = memo(function CurrentReservation({
       <button
         type="button"
         onClick={handleCancel}
-        disabled={cancelMutation.isPending}
+        disabled={isPending}
         className="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors touch-manipulation"
       >
-        {cancelMutation.isPending ? "Cancelling..." : "Cancel"}
+        {isPending ? "Cancelling..." : "Cancel"}
       </button>
     </div>
   );

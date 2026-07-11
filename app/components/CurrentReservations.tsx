@@ -1,6 +1,7 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTransition } from "react";
 import type { Reservation } from "../api/reservations/route";
 import { cancelReservation } from "../utils/api";
 import CurrentReservation from "./CurrentReservation";
@@ -30,6 +31,7 @@ const fetchReservations = async (): Promise<{
 
 export default function CurrentReservations() {
   const queryClient = useQueryClient();
+  const [isPending, startTransition] = useTransition();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["reservations"],
@@ -39,19 +41,16 @@ export default function CurrentReservations() {
 
   const reservations = data?.reservations || [];
 
-  const cancelAllMutation = useMutation({
-    mutationFn: () => cancelAllReservations(reservations),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reservations"] });
-      queryClient.invalidateQueries({ queryKey: ["usage"] });
-    },
-    onError: (error: Error) => {
-      console.error("Failed to cancel all reservations:", error.message);
-    },
-  });
-
   const handleCancelAll = () => {
-    cancelAllMutation.mutate();
+    startTransition(async () => {
+      try {
+        await cancelAllReservations(reservations);
+        queryClient.invalidateQueries({ queryKey: ["reservations"] });
+        queryClient.invalidateQueries({ queryKey: ["usage"] });
+      } catch (error) {
+        console.error("Failed to cancel all reservations:", (error as Error).message);
+      }
+    });
   };
 
   if (isLoading) {
@@ -85,10 +84,10 @@ export default function CurrentReservations() {
             <button
               type="button"
               onClick={handleCancelAll}
-              disabled={cancelAllMutation.isPending}
+              disabled={isPending}
               className="bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
             >
-              {cancelAllMutation.isPending ? "Cancelling..." : "Cancel All"}
+              {isPending ? "Cancelling..." : "Cancel All"}
             </button>
           ) : null}
         </div>
