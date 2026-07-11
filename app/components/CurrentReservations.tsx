@@ -1,16 +1,9 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTransition } from "react";
-import {
-  cancelReservation,
-  fetchReservations,
-  type Reservation,
-} from "../utils/apiClient";
+import { useQuery } from "@tanstack/react-query";
+import { useCancelAllReservations } from "../hooks/useReservationMutations";
+import { fetchReservations } from "../utils/apiClient";
 import CurrentReservation from "./CurrentReservation";
-
-const cancelAllReservations = (reservations: Reservation[]) =>
-  Promise.all(reservations.map((r) => cancelReservation(r.id)));
 
 const currentReservationsLoading = (
   <div className="p-4 sm:p-6 md:p-8">
@@ -22,8 +15,7 @@ const currentReservationsLoading = (
 );
 
 export default function CurrentReservations() {
-  const queryClient = useQueryClient();
-  const [isPending, startTransition] = useTransition();
+  const { isPending, cancelAll } = useCancelAllReservations();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["reservations"],
@@ -33,17 +25,7 @@ export default function CurrentReservations() {
 
   const reservations = data?.reservations || [];
 
-  const handleCancelAll = () => {
-    startTransition(async () => {
-      try {
-        await cancelAllReservations(reservations);
-        queryClient.invalidateQueries({ queryKey: ["reservations"] });
-        queryClient.invalidateQueries({ queryKey: ["usage"] });
-      } catch (error) {
-        console.error("Failed to cancel all reservations:", (error as Error).message);
-      }
-    });
-  };
+  const handleCancelAll = () => cancelAll(reservations);
 
   if (isLoading) {
     return currentReservationsLoading;
