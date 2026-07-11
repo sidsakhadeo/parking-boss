@@ -1,11 +1,10 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { NextResponse } from "next/server";
 import z from "zod";
 import { getConfig } from "@/app/api/config/getConfig";
 import { makeFetch } from "@/app/utils/makeFetch";
 import { getViewpoint } from "@/app/utils/viewpoint";
 import { API_DOMAIN } from "../constants";
+import { getDisplayValueByPlate } from "../vehicles/store";
 
 const CURENT_RESERVATIONS_TOKENS_URL = `https://${API_DOMAIN}/v1/accounts/auth/tokens`;
 const VALID_PERMIT_TITLE = "Guest Parking";
@@ -100,23 +99,7 @@ export async function GET() {
     const items = res.permits.items;
     const vehicles = res.vehicles.items;
 
-    // Load local vehicles data for displayName lookup
-    const vehiclesPath = join(process.cwd(), "db", "vehicles.json");
-    const localVehiclesData = JSON.parse(
-      readFileSync(vehiclesPath, "utf8"),
-    ) as Record<
-      string,
-      {
-        vehicle: string;
-        notes: string;
-        name: string;
-        displayValue: string;
-      }
-    >;
-
-    const displayValueByPlate = new Map(
-      Object.values(localVehiclesData).map((v) => [v.vehicle, v.displayValue]),
-    );
+    const displayValueByPlate = getDisplayValueByPlate();
 
     const validPermitsKeys = Object.keys(items).filter(
       (key) => items[key]?.title === VALID_PERMIT_TITLE,

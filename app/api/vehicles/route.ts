@@ -1,21 +1,16 @@
-import { readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { type NextRequest, NextResponse } from "next/server";
+import { readVehicles, writeVehicles } from "./store";
 
-export interface Vehicle {
-  vehicle: string;
-  notes: string;
-  name: string;
-  displayValue: string;
-}
+// Capitalize each word in a string
+const capitalize = (str: string) =>
+  str
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 
 export async function GET() {
   try {
-    const vehiclesPath = join(process.cwd(), "db", "vehicles.json");
-    const vehiclesData = JSON.parse(
-      readFileSync(vehiclesPath, "utf8"),
-    ) as Record<string, Vehicle>;
-
+    const vehiclesData = readVehicles();
     return NextResponse.json({
       vehicles: vehiclesData,
       count: Object.keys(vehiclesData).length,
@@ -28,13 +23,6 @@ export async function GET() {
     );
   }
 }
-
-// Capitalize each word in a string
-const capitalize = (str: string) =>
-  str
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,10 +44,7 @@ export async function POST(request: NextRequest) {
     // Combine owner's first name with make & model for notes field
     const notes = `${firstName}'s ${makeModel}`;
 
-    const vehiclesPath = join(process.cwd(), "db", "vehicles.json");
-    const vehiclesData = JSON.parse(
-      readFileSync(vehiclesPath, "utf8"),
-    ) as Record<string, Vehicle>;
+    const vehiclesData = readVehicles();
 
     // Generate a key from owner name and make/model
     const key = `${firstName.toLowerCase()}-${makeModel.toLowerCase().replace(/\s+/g, "-")}`;
@@ -82,7 +67,7 @@ export async function POST(request: NextRequest) {
       displayValue,
     };
 
-    writeFileSync(vehiclesPath, JSON.stringify(vehiclesData, null, 2));
+    writeVehicles(vehiclesData);
 
     return NextResponse.json({
       success: true,
