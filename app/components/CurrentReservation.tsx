@@ -1,7 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { memo, useTransition } from "react";
-import type { Reservation } from "../api/reservations/route";
-import { cancelReservation } from "../utils/api";
+import { cancelReservation, type Reservation } from "../utils/apiClient";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   hour: "numeric",

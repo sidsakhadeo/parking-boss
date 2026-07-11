@@ -1,13 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-
-interface UsageData {
-  weeklyLimit: string;
-  monthlyLimit: string;
-  weeklyUsage: string;
-  monthlyUsage: string;
-}
+import { fetchUsage } from "../utils/apiClient";
 
 const usageLoading = (
   <div className="p-4 sm:p-6 md:p-8">
@@ -17,14 +11,6 @@ const usageLoading = (
     </div>
   </div>
 );
-
-const fetchUsage = async (): Promise<UsageData> => {
-  const response = await fetch("/api/usage");
-  if (!response.ok) {
-    throw new Error("Failed to fetch usage data");
-  }
-  return response.json();
-};
 
 export default function Usage() {
   const {

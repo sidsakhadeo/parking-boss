@@ -10,26 +10,18 @@ import { API_DOMAIN } from "../constants";
 const CURENT_RESERVATIONS_TOKENS_URL = `https://${API_DOMAIN}/v1/accounts/auth/tokens`;
 const VALID_PERMIT_TITLE = "Guest Parking";
 
-export type Reservation = {
+type Reservation = {
   name: string;
   display: string;
   displayName?: string;
   id: string;
   grace: {
-    min: {
-      local: string;
-    };
-    max: {
-      local: string;
-    };
+    min: { local: string };
+    max: { local: string };
   };
   valid: {
-    min: {
-      local: string;
-    };
-    max: {
-      local: string;
-    };
+    min: { local: string };
+    max?: { local: string };
   };
 };
 

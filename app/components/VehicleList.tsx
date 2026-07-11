@@ -3,7 +3,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
-
+import {
+  createReservation,
+  fetchVehicles,
+} from "../utils/apiClient";
 import Vehicle, { type VehicleData } from "./Vehicle";
 
 const AddVehicleModal = dynamic(() => import("./AddVehicleModal"));
@@ -16,38 +19,6 @@ const vehicleListLoading = (
     </div>
   </div>
 );
-
-const fetchVehicles = async (): Promise<{
-  vehicles: Record<string, VehicleData>;
-  count: number;
-}> => {
-  const response = await fetch("/api/vehicles");
-  if (!response.ok) {
-    throw new Error("Failed to fetch vehicles");
-  }
-  return response.json();
-};
-
-const createReservation = async (data: {
-  vehicle: string;
-  notes: string;
-  name: string;
-}) => {
-  const response = await fetch("/api/reservation", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to create reservation");
-  }
-
-  return response.json();
-};
 
 export default function VehicleList() {
   const [searchQuery, setSearchQuery] = useState("");

@@ -2,8 +2,11 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTransition } from "react";
-import type { Reservation } from "../api/reservations/route";
-import { cancelReservation } from "../utils/api";
+import {
+  cancelReservation,
+  fetchReservations,
+  type Reservation,
+} from "../utils/apiClient";
 import CurrentReservation from "./CurrentReservation";
 
 const cancelAllReservations = (reservations: Reservation[]) =>
@@ -17,17 +20,6 @@ const currentReservationsLoading = (
     </div>
   </div>
 );
-
-const fetchReservations = async (): Promise<{
-  reservations: Reservation[];
-  count: number;
-}> => {
-  const response = await fetch("/api/reservations");
-  if (!response.ok) {
-    throw new Error("Failed to fetch reservations");
-  }
-  return response.json();
-};
 
 export default function CurrentReservations() {
   const queryClient = useQueryClient();
