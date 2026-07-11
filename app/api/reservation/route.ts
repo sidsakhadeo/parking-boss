@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import z from "zod";
-import type { Config } from "@/app/api/config/route";
+import { getConfig } from "@/app/api/config/getConfig";
 import { makeFetch, makePut } from "@/app/utils/makeFetch";
 import { getViewpoint } from "@/app/utils/viewpoint";
 import { API_DOMAIN } from "../constants";
@@ -13,11 +13,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { vehicle, notes, name } = body;
 
-    const configResponse = await fetch("http://localhost:3000/api/config");
-    if (!configResponse.ok) {
-      throw new Error("Failed to fetch configuration");
-    }
-    const config: Config = await configResponse.json();
+    const config = getConfig();
 
     const reserveUrl = new URL(RESERVE_URL);
     reserveUrl.searchParams.append("viewpoint", viewpoint);
@@ -53,11 +49,7 @@ export async function DELETE(request: NextRequest) {
     const body = await request.json();
     const { id } = body;
 
-    const configResponse = await fetch("http://localhost:3000/api/config");
-    if (!configResponse.ok) {
-      throw new Error("Failed to fetch configuration");
-    }
-    const config: Config = await configResponse.json();
+    const config = getConfig();
 
     const expiryURL = new URL(`https://${API_DOMAIN}/v1/permits/${id}/expires`);
 

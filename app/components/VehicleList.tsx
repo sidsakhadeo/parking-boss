@@ -1,9 +1,12 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
-import AddVehicleModal from "./AddVehicleModal";
+
 import Vehicle, { type VehicleData } from "./Vehicle";
+
+const AddVehicleModal = dynamic(() => import("./AddVehicleModal"));
 
 const vehicleListLoading = (
   <div className="p-4 sm:p-6 md:p-8">

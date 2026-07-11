@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import z from "zod";
-import type { Config } from "@/app/api/config/route";
+import { getConfig } from "@/app/api/config/getConfig";
 import { makeFetch } from "@/app/utils/makeFetch";
 import { getUntilFirstSpace } from "@/app/utils/string";
 import { getViewpoint } from "@/app/utils/viewpoint";
@@ -56,11 +56,7 @@ export async function GET() {
   try {
     const viewpoint = getViewpoint();
 
-    const configResponse = await fetch("http://localhost:3000/api/config");
-    if (!configResponse.ok) {
-      throw new Error("Failed to fetch configuration");
-    }
-    const config: Config = await configResponse.json();
+    const config = getConfig();
 
     const tokenUrl = new URL(CURENT_RESERVATIONS_TOKENS_URL);
     tokenUrl.searchParams.append("viewpoint", viewpoint);
