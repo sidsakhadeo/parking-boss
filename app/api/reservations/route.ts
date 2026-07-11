@@ -122,6 +122,10 @@ export async function GET() {
       }
     >;
 
+    const displayValueByPlate = new Map(
+      Object.values(localVehiclesData).map((v) => [v.vehicle, v.displayValue]),
+    );
+
     const validPermitsKeys = Object.keys(items).filter(
       (key) => items[key]?.title === VALID_PERMIT_TITLE,
     );
@@ -135,13 +139,9 @@ export async function GET() {
         { ...items[key] },
       ) as Reservation;
 
-      // Find matching vehicle by license plate and add displayName
-      const matchingVehicle = Object.values(localVehiclesData).find(
-        (vehicle) => vehicle.vehicle === obj.display,
-      );
-
-      if (matchingVehicle) {
-        obj.displayName = matchingVehicle.displayValue;
+      const displayName = displayValueByPlate.get(obj.display);
+      if (displayName) {
+        obj.displayName = displayName;
       }
 
       result.push(obj);
