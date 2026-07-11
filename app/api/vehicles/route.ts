@@ -1,12 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { readVehicles, writeVehicles } from "./store";
-
-// Capitalize each word in a string
-const capitalize = (str: string) =>
-  str
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
+import { buildVehicleEntry, resolveKey } from "./vehicles.logic";
 
 export async function GET() {
   try {
@@ -36,44 +30,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Capitalize make & model and owner name
-    const makeModel = capitalize(rawNotes);
-    const name = capitalize(rawName);
-    const firstName = name.split(" ")[0];
-
-    // Combine owner's first name with make & model for notes field
-    const notes = `${firstName}'s ${makeModel}`;
-
     const vehiclesData = readVehicles();
+    const { baseKey, entry } = buildVehicleEntry(vehicle, rawNotes, rawName);
+    const finalKey = resolveKey(baseKey, vehiclesData);
 
-    // Generate a key from owner name and make/model
-    const key = `${firstName.toLowerCase()}-${makeModel.toLowerCase().replace(/\s+/g, "-")}`;
-
-    // Check if key already exists, append number if so
-    let finalKey = key;
-    let counter = 1;
-    while (vehiclesData[finalKey]) {
-      finalKey = `${key}-${counter}`;
-      counter++;
-    }
-
-    // Create displayValue from owner's first name and make/model
-    const displayValue = `${firstName}'s ${makeModel}`;
-
-    vehiclesData[finalKey] = {
-      vehicle: vehicle.toUpperCase(),
-      notes,
-      name,
-      displayValue,
-    };
-
+    vehiclesData[finalKey] = entry;
     writeVehicles(vehiclesData);
 
-    return NextResponse.json({
-      success: true,
-      key: finalKey,
-      vehicle: vehiclesData[finalKey],
-    });
+    return NextResponse.json({ success: true, key: finalKey, vehicle: entry });
   } catch (error) {
     console.error("Failed to add vehicle:", error);
     return NextResponse.json(
