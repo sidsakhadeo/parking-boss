@@ -30,7 +30,7 @@ export interface Reservation {
   id: string;
   grace: {
     min: { local: string };
-    max: { local: string };
+    max?: { local: string };
   };
   valid: {
     min: { local: string };
@@ -55,11 +55,14 @@ export const addVehicle = (data: {
   notes: string;
   name: string;
 }) =>
-  apiFetch<{ id: string }>(ENDPOINTS.vehicles, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
+  apiFetch<{ success: boolean; key: string; vehicle: VehicleData }>(
+    ENDPOINTS.vehicles,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    },
+  );
 
 export const fetchReservations = () =>
   apiFetch<{ reservations: Reservation[]; count: number }>(

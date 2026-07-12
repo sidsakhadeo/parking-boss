@@ -14,6 +14,10 @@ export async function GET() {
     const viewpoint = getViewpoint();
     const config = getConfig();
 
+    // Independent of the auth/permits calls below, so start it now and
+    // await it only once we're ready to merge in local vehicle data.
+    const displayValueByPlatePromise = getDisplayValueByPlate();
+
     const tokenUrl = new URL(TOKENS_URL);
     tokenUrl.searchParams.append("viewpoint", viewpoint);
     tokenUrl.searchParams.append("location", config.location);
@@ -34,7 +38,10 @@ export async function GET() {
     now.setMonth(now.getMonth() + 1);
 
     reservationsUrl.searchParams.append("viewpoint", viewpoint);
-    reservationsUrl.searchParams.append("valid", `${viewpoint}/${now.toISOString()}`);
+    reservationsUrl.searchParams.append(
+      "valid",
+      `${viewpoint}/${now.toISOString()}`,
+    );
     reservationsUrl.searchParams.append("Authorization", `bearer ${authToken}`);
 
     const res = await makeFetch(reservationsUrl, "GET", reservationsSchema);
@@ -42,7 +49,7 @@ export async function GET() {
     const reservations = buildReservations(
       res.permits.items,
       res.vehicles.items,
-      getDisplayValueByPlate(),
+      await displayValueByPlatePromise,
     );
 
     return NextResponse.json({ reservations, count: reservations.length });

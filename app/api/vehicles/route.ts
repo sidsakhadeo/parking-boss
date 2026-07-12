@@ -4,7 +4,7 @@ import { buildVehicleEntry, resolveKey } from "./vehicles.logic";
 
 export async function GET() {
   try {
-    const vehiclesData = readVehicles();
+    const vehiclesData = await readVehicles();
     return NextResponse.json({
       vehicles: vehiclesData,
       count: Object.keys(vehiclesData).length,
@@ -30,12 +30,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const vehiclesData = readVehicles();
+    const vehiclesData = await readVehicles();
     const { baseKey, entry } = buildVehicleEntry(vehicle, rawNotes, rawName);
     const finalKey = resolveKey(baseKey, vehiclesData);
 
     vehiclesData[finalKey] = entry;
-    writeVehicles(vehiclesData);
+    await writeVehicles(vehiclesData);
 
     return NextResponse.json({ success: true, key: finalKey, vehicle: entry });
   } catch (error) {

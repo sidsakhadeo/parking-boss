@@ -13,6 +13,9 @@ export const makeFetch = async <T>(
 };
 
 export const makePut = async (url: URL) => {
-  await fetch(url, { method: "PUT" });
+  const response = await fetch(url, { method: "PUT" });
+  if (!response.ok) {
+    throw new Error(`PUT ${url} failed with status ${response.status}`);
+  }
   return "OK";
 };
