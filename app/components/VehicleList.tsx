@@ -23,7 +23,7 @@ export default function VehicleList() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const handleCloseModal = useCallback(() => setIsAddModalOpen(false), []);
-  const { isPending: isReserving, create } = useCreateReservation();
+  const { pendingVehicleId, create } = useCreateReservation();
 
   const {
     data: vehiclesResponse,
@@ -44,7 +44,7 @@ export default function VehicleList() {
   const handleReserve = useCallback(
     (vehicleId: string) => {
       const vehicle = vehiclesData[vehicleId];
-      create({
+      create(vehicleId, {
         vehicle: vehicle.vehicle,
         notes: vehicle.notes,
         name: vehicle.name,
@@ -121,6 +121,7 @@ export default function VehicleList() {
               id={id}
               vehicle={vehicle}
               onReserve={handleReserve}
+              disabled={pendingVehicleId === id}
             />
           ))}
         </div>

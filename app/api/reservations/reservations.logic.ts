@@ -33,7 +33,7 @@ type Reservation = {
   display: string;
   displayName?: string;
   id: string;
-  grace: { min: { local: string }; max: { local: string } };
+  grace: { min: { local: string }; max?: { local: string } };
   valid: { min: { local: string }; max?: { local: string } };
 };
 

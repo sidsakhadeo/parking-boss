@@ -7,9 +7,15 @@ interface VehicleProps {
   id: string;
   vehicle: VehicleData;
   onReserve: (vehicleId: string) => void;
+  disabled?: boolean;
 }
 
-const Vehicle = memo(function Vehicle({ id, vehicle, onReserve }: VehicleProps) {
+const Vehicle = memo(function Vehicle({
+  id,
+  vehicle,
+  onReserve,
+  disabled,
+}: VehicleProps) {
   return (
     <div className="border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
       <h2 className="text-lg sm:text-xl font-semibold mb-2">{vehicle.displayValue}</h2>
@@ -28,9 +34,10 @@ const Vehicle = memo(function Vehicle({ id, vehicle, onReserve }: VehicleProps) 
       <button
         type="button"
         onClick={() => onReserve(id)}
-        className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium py-3 px-4 rounded-lg transition-colors touch-manipulation"
+        disabled={disabled}
+        className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors touch-manipulation"
       >
-        Reserve
+        {disabled ? "Reserving..." : "Reserve"}
       </button>
     </div>
   );
