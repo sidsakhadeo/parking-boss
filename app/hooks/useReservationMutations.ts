@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   cancelReservation,
   createReservation,
@@ -19,19 +19,26 @@ function invalidateAll(queryClient: ReturnType<typeof useQueryClient>) {
 export function useCreateReservation() {
   const queryClient = useQueryClient();
   const [isPending, startTransition] = useTransition();
+  const [pendingVehicleId, setPendingVehicleId] = useState<string | null>(null);
 
-  const create = (data: { vehicle: string; notes: string; name: string }) => {
+  const create = (
+    vehicleId: string,
+    data: { vehicle: string; notes: string; name: string },
+  ) => {
+    setPendingVehicleId(vehicleId);
     startTransition(async () => {
       try {
         await createReservation(data);
         invalidateAll(queryClient);
       } catch (error) {
         alert(`Error reserving: ${(error as Error).message}`);
+      } finally {
+        setPendingVehicleId(null);
       }
     });
   };
 
-  return { isPending, create };
+  return { isPending, pendingVehicleId, create };
 }
 
 export function useCancelReservation() {
@@ -44,7 +51,10 @@ export function useCancelReservation() {
         await cancelReservation(id);
         invalidateAll(queryClient);
       } catch (error) {
-        console.error("Failed to cancel reservation:", (error as Error).message);
+        console.error(
+          "Failed to cancel reservation:",
+          (error as Error).message,
+        );
       }
     });
   };
@@ -62,7 +72,10 @@ export function useCancelAllReservations() {
         await Promise.all(reservations.map((r) => cancelReservation(r.id)));
         invalidateAll(queryClient);
       } catch (error) {
-        console.error("Failed to cancel all reservations:", (error as Error).message);
+        console.error(
+          "Failed to cancel all reservations:",
+          (error as Error).message,
+        );
       }
     });
   };

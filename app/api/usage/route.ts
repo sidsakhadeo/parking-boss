@@ -4,11 +4,7 @@ import { getConfig } from "@/app/api/config/getConfig";
 import { makeFetch } from "@/app/utils/makeFetch";
 import { getViewpoint } from "@/app/utils/viewpoint";
 import { API_DOMAIN } from "../constants";
-import {
-  getUsageLabel,
-  parseLimits,
-  usageResponseSchema,
-} from "./usage.logic";
+import { getUsageLabel, parseLimits, usageResponseSchema } from "./usage.logic";
 
 const TOKENS_URL = `https://${API_DOMAIN}/v1/accounts/auth/tokens`;
 
