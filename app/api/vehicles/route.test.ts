@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "bun:test";
-import { GET, POST } from "@/app/api/vehicles/route";
+import { DELETE, GET, POST } from "@/app/api/vehicles/route";
 import { getMockVehicles, setMockVehicles } from "@/test/mocks/store";
 
 const fixtureVehicles = {
@@ -17,9 +17,9 @@ const fixtureVehicles = {
   },
 };
 
-const jsonRequest = (body: unknown) =>
+const jsonRequest = (body: unknown, method = "POST") =>
   new Request("http://localhost/api/vehicles", {
-    method: "POST",
+    method,
     body: JSON.stringify(body),
   });
 
@@ -97,5 +97,37 @@ describe("POST /api/vehicles", () => {
     const body = await response.json();
 
     expect(body.key).toBe("jane-honda-civic-1");
+  });
+});
+
+describe("DELETE /api/vehicles", () => {
+  beforeEach(() => {
+    setMockVehicles(fixtureVehicles);
+  });
+
+  it("returns a 400 when the key is missing", async () => {
+    const response = await DELETE(jsonRequest({}, "DELETE"));
+
+    expect(response.status).toBe(400);
+  });
+
+  it("returns a 404 when the vehicle does not exist", async () => {
+    const response = await DELETE(
+      jsonRequest({ key: "does-not-exist" }, "DELETE"),
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  it("removes the vehicle and writes back the store", async () => {
+    const response = await DELETE(
+      jsonRequest({ key: "vismit-tesla-m3" }, "DELETE"),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(getMockVehicles()?.["vismit-tesla-m3"]).toBeUndefined();
+    expect(getMockVehicles()?.["tejas-tesla"]).toBeDefined();
   });
 });

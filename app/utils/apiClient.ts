@@ -64,6 +64,13 @@ export const addVehicle = (data: {
     },
   );
 
+export const deleteVehicle = (key: string) =>
+  apiFetch<{ success: boolean }>(ENDPOINTS.vehicles, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ key }),
+  });
+
 export const fetchReservations = () =>
   apiFetch<{ reservations: Reservation[]; count: number }>(
     ENDPOINTS.reservations,

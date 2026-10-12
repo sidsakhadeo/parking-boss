@@ -4,8 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
 import { useCreateReservation } from "../hooks/useReservationMutations";
+import { useDeleteVehicle } from "../hooks/useVehicleMutations";
 import { fetchVehicles } from "../utils/apiClient";
-import Vehicle, { type VehicleData } from "./Vehicle";
+import Vehicle from "./Vehicle";
 
 const AddVehicleModal = dynamic(() => import("./AddVehicleModal"));
 
@@ -24,6 +25,7 @@ export default function VehicleList() {
 
   const handleCloseModal = useCallback(() => setIsAddModalOpen(false), []);
   const { pendingVehicleId, create } = useCreateReservation();
+  const { pendingVehicleId: pendingDeleteId, remove } = useDeleteVehicle();
 
   const {
     data: vehiclesResponse,
@@ -121,7 +123,9 @@ export default function VehicleList() {
               id={id}
               vehicle={vehicle}
               onReserve={handleReserve}
+              onDelete={remove}
               disabled={pendingVehicleId === id}
+              deleteDisabled={pendingDeleteId === id}
             />
           ))}
         </div>
@@ -139,10 +143,7 @@ export default function VehicleList() {
         </div>
       </div>
 
-      <AddVehicleModal
-        isOpen={isAddModalOpen}
-        onClose={handleCloseModal}
-      />
+      <AddVehicleModal isOpen={isAddModalOpen} onClose={handleCloseModal} />
     </section>
   );
 }

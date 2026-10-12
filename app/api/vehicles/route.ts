@@ -46,3 +46,34 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { key } = body;
+
+    if (!key) {
+      return NextResponse.json(
+        { error: "Missing required field: key" },
+        { status: 400 },
+      );
+    }
+
+    const vehiclesData = await readVehicles();
+
+    if (!vehiclesData[key]) {
+      return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });
+    }
+
+    delete vehiclesData[key];
+    await writeVehicles(vehiclesData);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Failed to delete vehicle:", error);
+    return NextResponse.json(
+      { error: "Failed to delete vehicle" },
+      { status: 500 },
+    );
+  }
+}
