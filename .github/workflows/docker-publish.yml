@@ -15,11 +15,15 @@ env:
   IMAGE_NAME: parking-boss
 
 jobs:
-  build-and-push:
+  # Builds and pushes an image for every PR (tagged pr-<number>) and for
+  # version tags (tagged with semver). The push-to-main case is handled by
+  # the promote job below, which reuses the pr-<number> image instead of
+  # rebuilding it.
+  build:
+    if: github.event_name == 'pull_request' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
@@ -28,8 +32,10 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # Fork PRs don't have access to repo secrets, so they build without
+      # pushing. The promote job falls back to a full build in that case.
       - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -42,26 +48,95 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' }}
+          push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=docker-build
+          cache-to: type=gha,mode=max,scope=docker-build
+
+  # Runs after a PR merges to main. Promotes the already-built pr-<number>
+  # image to latest/main instead of rebuilding it.
+  promote:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Find merged pull request for this commit
+        id: find-pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: prs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+            });
+            const merged = prs.find((pr) => pr.merged_at);
+            core.setOutput("found", merged ? "true" : "false");
+            core.setOutput("number", merged ? merged.number : "");
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Promote PR image to latest (no rebuild)
+        if: steps.find-pr.outputs.found == 'true'
+        run: |
+          SOURCE="$REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME:pr-${{ steps.find-pr.outputs.number }}"
+          docker buildx imagetools create \
+            --tag "$REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME:latest" \
+            --tag "$REGISTRY/$DOCKERHUB_USERNAME/$IMAGE_NAME:main" \
+            "$SOURCE"
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+
+      # Only reached if no merged PR could be matched to this commit (e.g. a
+      # direct push to main) or the PR build never pushed an image (fork PR).
+      - name: Extract metadata for fallback build
+        if: steps.find-pr.outputs.found != 'true'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=raw,value=latest
+
+      - name: Fallback build and push
+        if: steps.find-pr.outputs.found != 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=docker-build
+          cache-to: type=gha,mode=max,scope=docker-build
 
       - name: Update Docker Hub Description
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
