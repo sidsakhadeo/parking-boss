@@ -23,7 +23,7 @@ export function useCreateReservation() {
 
   const create = (
     vehicleId: string,
-    data: { vehicle: string; notes: string; name: string },
+    data: { vehicle: string; notes: string; name: string; duration?: string },
   ) => {
     setPendingVehicleId(vehicleId);
     startTransition(async () => {

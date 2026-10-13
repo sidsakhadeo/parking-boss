@@ -1,29 +1,33 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
 import { useCreateReservation } from "../hooks/useReservationMutations";
 import { useDeleteVehicle } from "../hooks/useVehicleMutations";
 import { fetchVehicles } from "../utils/apiClient";
+import ReserveSheet, { type DurationHours } from "./ReserveSheet";
+import SectionError from "./SectionError";
 import Vehicle from "./Vehicle";
 
-const AddVehicleModal = dynamic(() => import("./AddVehicleModal"));
-
-const vehicleListLoading = (
-  <div className="p-4 sm:p-6 md:p-8">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4">Available Vehicles</h2>
-      <div className="text-gray-500">Loading vehicles...</div>
-    </div>
-  </div>
+const heading = (
+  <h2 className="text-[13px] font-medium text-muted">Vehicles</h2>
 );
 
-export default function VehicleList() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+const skeletonRows = ["w-32", "w-28", "w-24", "w-36"];
 
-  const handleCloseModal = useCallback(() => setIsAddModalOpen(false), []);
+interface VehicleListProps {
+  onAdd: () => void;
+  reservedPlates?: ReadonlySet<string>;
+}
+
+export default function VehicleList({
+  onAdd,
+  reservedPlates,
+}: VehicleListProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [reserveId, setReserveId] = useState<string | null>(null);
+
+  const handleCloseReserve = useCallback(() => setReserveId(null), []);
   const { pendingVehicleId, create } = useCreateReservation();
   const { pendingVehicleId: pendingDeleteId, remove } = useDeleteVehicle();
 
@@ -31,6 +35,7 @@ export default function VehicleList() {
     data: vehiclesResponse,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["vehicles"],
     queryFn: fetchVehicles,
@@ -43,16 +48,19 @@ export default function VehicleList() {
   );
   const vehicles = useMemo(() => Object.entries(vehiclesData), [vehiclesData]);
 
-  const handleReserve = useCallback(
-    (vehicleId: string) => {
-      const vehicle = vehiclesData[vehicleId];
-      create(vehicleId, {
+  const handleConfirmReserve = useCallback(
+    (hours: DurationHours) => {
+      if (!reserveId) return;
+      const vehicle = vehiclesData[reserveId];
+      setReserveId(null);
+      create(reserveId, {
         vehicle: vehicle.vehicle,
         notes: vehicle.notes,
         name: vehicle.name,
+        duration: `PT${hours}H`,
       });
     },
-    [vehiclesData, create],
+    [reserveId, vehiclesData, create],
   );
 
   const filteredVehicles = useMemo(() => {
@@ -72,78 +80,160 @@ export default function VehicleList() {
   }, [vehicles, searchQuery]);
 
   if (isLoading) {
-    return vehicleListLoading;
+    return (
+      <section
+        role="status"
+        aria-label="Loading vehicles"
+        className="animate-pulse space-y-2.5"
+      >
+        <div className="h-3.5 w-16 rounded-md bg-field" />
+        <div className="h-12 rounded-xl bg-field" />
+        <div>
+          {skeletonRows.map((width) => (
+            <div
+              key={width}
+              className="flex h-19 items-center gap-4 border-b border-line"
+            >
+              <div className="flex-1 space-y-2">
+                <div className={`h-4 rounded-md bg-field ${width}`} />
+                <div className="h-3.5 w-44 rounded-md bg-field" />
+              </div>
+              <div className="h-11 w-22 rounded-full bg-field" />
+            </div>
+          ))}
+        </div>
+      </section>
+    );
   }
 
   if (error) {
     return (
-      <div className="p-4 sm:p-6 md:p-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">
-            Available Vehicles
-          </h2>
-          <div className="text-red-500">
-            Error:{" "}
-            {error instanceof Error ? error.message : "An error occurred"}
-          </div>
-        </div>
-      </div>
+      <section className="space-y-2.5">
+        {heading}
+        <SectionError
+          title="Couldn't load vehicles"
+          error={error}
+          onRetry={() => refetch()}
+        />
+      </section>
     );
   }
 
+  const reserveVehicle = reserveId ? vehiclesData[reserveId] : undefined;
+
   return (
-    <section className="p-4 sm:p-6 md:p-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold">Available Vehicles</h2>
+    <section aria-label="Vehicles" className="space-y-2.5">
+      {heading}
+
+      {vehicles.length === 0 ? (
+        <div className="flex flex-col items-center gap-1.5 px-6 pt-14 text-center">
+          <p className="mt-2 text-[17px] font-semibold">No vehicles yet</p>
+          <p className="max-w-65 text-sm text-muted">
+            Add a car once, then reserve it in one tap.
+          </p>
           <button
             type="button"
-            onClick={() => setIsAddModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
+            onClick={onAdd}
+            className="mt-4 h-12 rounded-full bg-ink px-7 text-[15px] font-medium text-bg"
           >
-            Add New Vehicle
+            Add vehicle
           </button>
         </div>
-
-        <div className="mb-4 sm:mb-6">
-          <input
-            type="text"
-            placeholder="Search vehicles..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-3 sm:px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-base sm:text-lg"
-            inputMode="search"
-          />
-        </div>
-
-        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredVehicles.map(([id, vehicle]) => (
-            <Vehicle
-              key={id}
-              id={id}
-              vehicle={vehicle}
-              onReserve={handleReserve}
-              onDelete={remove}
-              disabled={pendingVehicleId === id}
-              deleteDisabled={pendingDeleteId === id}
+      ) : (
+        <>
+          <div className="flex h-12 items-center gap-2.5 rounded-xl bg-field pr-1.5 pl-3.5">
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              className="shrink-0 text-muted"
+            >
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="M16 16l4 4" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search"
+              aria-label="Search vehicles"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              inputMode="search"
+              className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted"
             />
-          ))}
-        </div>
-
-        {filteredVehicles.length === 0 && !!searchQuery && (
-          <div className="text-center text-gray-500 mt-8">
-            No vehicles found matching "{searchQuery}"
+            {searchQuery ? (
+              <button
+                type="button"
+                aria-label="Clear"
+                onClick={() => setSearchQuery("")}
+                className="flex size-11 items-center justify-center text-muted"
+              >
+                <svg
+                  aria-hidden="true"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                >
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+            ) : null}
           </div>
-        )}
 
-        <div className="mt-8 text-center text-gray-500">
-          {searchQuery
-            ? `Showing ${filteredVehicles.length} of ${vehicles.length} vehicles`
-            : `Total vehicles: ${vehicles.length}`}
-        </div>
-      </div>
+          {filteredVehicles.length === 0 ? (
+            <div
+              role="status"
+              className="flex flex-col items-center gap-1.5 px-6 pt-12 text-center"
+            >
+              <p className="text-[17px] font-semibold">
+                No matches for "{searchQuery}"
+              </p>
+              <p className="text-sm text-muted">
+                Search by name, plate or model.
+              </p>
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="mt-3.5 h-11 rounded-full border border-line px-5 text-[15px] font-medium"
+              >
+                Clear search
+              </button>
+            </div>
+          ) : (
+            <ul>
+              {filteredVehicles.map(([id, vehicle]) => (
+                <Vehicle
+                  key={id}
+                  id={id}
+                  vehicle={vehicle}
+                  onReserve={setReserveId}
+                  onDelete={remove}
+                  disabled={pendingVehicleId === id}
+                  deleteDisabled={pendingDeleteId === id}
+                  reserved={reservedPlates?.has(vehicle.vehicle)}
+                />
+              ))}
+            </ul>
+          )}
+        </>
+      )}
 
-      <AddVehicleModal isOpen={isAddModalOpen} onClose={handleCloseModal} />
+      {reserveVehicle ? (
+        <ReserveSheet
+          key={reserveId}
+          vehicle={reserveVehicle}
+          onConfirm={handleConfirmReserve}
+          onClose={handleCloseReserve}
+        />
+      ) : null}
     </section>
   );
 }

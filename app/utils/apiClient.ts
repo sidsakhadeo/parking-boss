@@ -80,6 +80,7 @@ export const createReservation = (data: {
   vehicle: string;
   notes: string;
   name: string;
+  duration?: string;
 }) =>
   apiFetch<{ message: string }>(ENDPOINTS.reservation, {
     method: "POST",

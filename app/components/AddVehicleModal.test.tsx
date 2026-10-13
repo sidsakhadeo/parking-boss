@@ -7,7 +7,7 @@ describe("AddVehicleModal", () => {
   it("renders nothing when closed", () => {
     render(<AddVehicleModal isOpen={false} onClose={() => {}} />);
 
-    expect(screen.queryByText("Add New Vehicle")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("submits the form and invalidates the vehicles query on success", async () => {
@@ -22,10 +22,10 @@ describe("AddVehicleModal", () => {
     );
     const invalidateSpy = spyOn(queryClient, "invalidateQueries");
 
-    await user.type(screen.getByLabelText("License Plate"), "ABC123");
-    await user.type(screen.getByLabelText("Make & Model"), "Tesla Model 3");
+    await user.type(screen.getByLabelText("License plate"), "ABC123");
+    await user.type(screen.getByLabelText("Make and model"), "Tesla Model 3");
     await user.type(screen.getByLabelText("Owner"), "Jane Doe");
-    await user.click(screen.getByRole("button", { name: "Add Vehicle" }));
+    await user.click(screen.getByRole("button", { name: "Add vehicle" }));
 
     await waitFor(() => {
       expect(onClose).toHaveBeenCalled();
@@ -44,10 +44,10 @@ describe("AddVehicleModal", () => {
 
     render(<AddVehicleModal isOpen={true} onClose={() => {}} />);
 
-    await user.type(screen.getByLabelText("License Plate"), "ABC123");
-    await user.type(screen.getByLabelText("Make & Model"), "Tesla Model 3");
+    await user.type(screen.getByLabelText("License plate"), "ABC123");
+    await user.type(screen.getByLabelText("Make and model"), "Tesla Model 3");
     await user.type(screen.getByLabelText("Owner"), "Jane Doe");
-    await user.click(screen.getByRole("button", { name: "Add Vehicle" }));
+    await user.click(screen.getByRole("button", { name: "Add vehicle" }));
 
     await waitFor(() => {
       expect(alertSpy).toHaveBeenCalledWith(

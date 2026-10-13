@@ -36,6 +36,56 @@ describe("POST /api/reservation", () => {
     expect(body).toEqual({ message: "Reservation created successfully" });
   });
 
+  it("passes an allowed duration through to the external API", async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("{}"),
+    );
+
+    const response = await POST(
+      jsonRequest({
+        vehicle: "ABC123",
+        notes: "Tesla Model 3",
+        name: "Jane",
+        duration: "PT2H",
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    const calledUrl = new URL(String(fetchSpy.mock.calls[0][0]));
+    expect(calledUrl.searchParams.get("duration")).toBe("PT2H");
+  });
+
+  it("uses the configured duration when none is provided", async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("{}"),
+    );
+
+    await POST(
+      jsonRequest({ vehicle: "ABC123", notes: "Tesla Model 3", name: "Jane" }),
+    );
+
+    const calledUrl = new URL(String(fetchSpy.mock.calls[0][0]));
+    expect(calledUrl.searchParams.get("duration")).toBe("P1D");
+  });
+
+  it("rejects a duration that is not allowed", async () => {
+    const fetchSpy = spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("{}"),
+    );
+
+    const response = await POST(
+      jsonRequest({
+        vehicle: "ABC123",
+        notes: "Tesla Model 3",
+        name: "Jane",
+        duration: "P30D",
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
   it("returns a 500 when the external API call fails", async () => {
     spyOn(globalThis, "fetch").mockRejectedValue(new Error("network error"));
 

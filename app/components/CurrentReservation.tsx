@@ -1,16 +1,30 @@
 import { memo } from "react";
+import { useNow } from "../hooks/useNow";
 import { useCancelReservation } from "../hooks/useReservationMutations";
 import type { Reservation } from "../utils/apiClient";
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
+const EXPIRING_WINDOW_MINUTES = 60;
+
+const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
   hour: "numeric",
   minute: "2-digit",
   month: "numeric",
   day: "numeric",
 });
 
-const makeReadable = (dateStr: string): string =>
-  dateFormatter.format(new Date(dateStr));
+const timeFormatter = new Intl.DateTimeFormat("en-US", {
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+const formatDateTime = (dateStr: string): string =>
+  dateTimeFormatter.format(new Date(dateStr));
+
+const formatTime = (dateStr: string): string =>
+  timeFormatter.format(new Date(dateStr));
+
+const isSameDay = (a: string, b: string): boolean =>
+  new Date(a).toDateString() === new Date(b).toDateString();
 
 interface CurrentReservationProps {
   reservation: Reservation;
@@ -23,34 +37,70 @@ const CurrentReservation = memo(function CurrentReservation({
 
   const handleCancel = () => cancel(reservation.id);
 
+  const from = reservation.valid.min.local;
+  const until = reservation.valid.max?.local;
+  const now = useNow(30_000);
+  const isActive = new Date(from).getTime() <= now;
+  const minutesLeft = until
+    ? Math.ceil((new Date(until).getTime() - now) / 60_000)
+    : null;
+  const isExpiring =
+    minutesLeft !== null &&
+    minutesLeft > 0 &&
+    minutesLeft <= EXPIRING_WINDOW_MINUTES;
+
+  const status = isExpiring
+    ? {
+        label: `Expiring in ${minutesLeft} min`,
+        text: "text-danger",
+        dot: "bg-danger",
+      }
+    : isActive
+      ? { label: "Active", text: "text-ok", dot: "bg-ok" }
+      : { label: "Upcoming", text: "text-muted", dot: "bg-muted" };
+
   return (
-    <div className="border border-green-200 bg-green-50 rounded-lg p-4">
-      <h3 className="font-semibold text-green-800 mb-2 text-sm sm:text-base">
-        {reservation.displayName}
-      </h3>
-      <div className="space-y-1 text-sm text-green-700 mb-4">
-        <p>
-          <span className="font-medium">Owner:</span> {reservation.name}
-        </p>
-        <p>
-          <span className="font-medium">License:</span> {reservation.display}
-        </p>
-        <p>
-          <span className="font-medium">Valid From:</span>{" "}
-          {makeReadable(reservation.valid.min.local)}
-        </p>
-        {reservation.valid.max ? (
-          <p>
-            <span className="font-medium">Valid Until:</span>{" "}
-            {makeReadable(reservation.valid.max.local)}
-          </p>
-        ) : null}
+    <div className="space-y-3.5 rounded-2xl border border-line bg-surface p-[18px]">
+      <div className="space-y-1.5">
+        <div
+          className={`flex items-center gap-2 text-[13px] font-medium ${status.text}`}
+        >
+          <span
+            aria-hidden="true"
+            className={`size-2 rounded-full ${status.dot}`}
+          />
+          {status.label}
+        </div>
+        <div className="font-mono text-2xl font-semibold tracking-wide">
+          {reservation.display}
+        </div>
+        <div className="text-sm text-muted">
+          {reservation.displayName ? (
+            <>
+              <span>{reservation.displayName}</span>
+              {" · "}
+            </>
+          ) : null}
+          <span>{reservation.name}</span>
+        </div>
+        <div className="text-sm tabular-nums">
+          {formatDateTime(from)}
+          {until ? (
+            <>
+              {" "}
+              <span className="text-muted">to</span>{" "}
+              {isSameDay(from, until)
+                ? formatTime(until)
+                : formatDateTime(until)}
+            </>
+          ) : null}
+        </div>
       </div>
       <button
         type="button"
         onClick={handleCancel}
         disabled={isPending}
-        className="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors touch-manipulation"
+        className="h-11 w-full rounded-xl border border-line text-[15px] font-medium text-danger transition-opacity disabled:opacity-50"
       >
         {isPending ? "Cancelling..." : "Cancel"}
       </button>

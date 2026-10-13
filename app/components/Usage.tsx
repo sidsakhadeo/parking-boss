@@ -3,20 +3,47 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchUsage } from "../utils/apiClient";
 
-const usageLoading = (
-  <div className="p-4 sm:p-6 md:p-8">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4">Usage Statistics</h2>
-      <div className="text-gray-500">Loading usage data...</div>
+function Meter({
+  label,
+  used,
+  limit,
+}: {
+  label: string;
+  used: string;
+  limit: string;
+}) {
+  const ratio = Number(used) / Number(limit);
+  const percent = Number.isFinite(ratio)
+    ? Math.min(100, Math.max(0, ratio * 100))
+    : 0;
+
+  return (
+    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+      <span className="text-[13px] text-muted">{label}</span>
+      <span className="text-[17px] font-semibold tabular-nums">
+        <span>{used}</span>
+        <span className="text-[13px] font-normal text-muted">
+          {" / "}
+          <span>{limit}</span>
+          {" hrs"}
+        </span>
+      </span>
+      <div className="mt-0.5 h-1 rounded-full bg-line">
+        <div
+          className="h-1 rounded-full bg-ink"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
     </div>
-  </div>
-);
+  );
+}
 
 export default function Usage() {
   const {
     data: usage,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["usage"],
     queryFn: fetchUsage,
@@ -24,20 +51,39 @@ export default function Usage() {
   });
 
   if (isLoading) {
-    return usageLoading;
+    return (
+      <section
+        role="status"
+        aria-label="Loading usage"
+        className="flex animate-pulse gap-6"
+      >
+        <div className="flex flex-1 flex-col gap-3">
+          <div className="h-3.5 w-20 rounded-md bg-field" />
+          <div className="h-1 rounded-full bg-field" />
+        </div>
+        <div className="flex flex-1 flex-col gap-3">
+          <div className="h-3.5 w-24 rounded-md bg-field" />
+          <div className="h-1 rounded-full bg-field" />
+        </div>
+      </section>
+    );
   }
 
   if (error) {
     return (
-      <div className="p-4 sm:p-6 md:p-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4">Usage Statistics</h2>
-          <div className="text-red-500">
-            Error:{" "}
-            {error instanceof Error ? error.message : "An error occurred"}
-          </div>
-        </div>
-      </div>
+      <section
+        role="alert"
+        className="flex min-h-11 items-center justify-between gap-3"
+      >
+        <span className="text-sm text-muted">Usage unavailable</span>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="-mr-2 h-11 px-2 text-sm font-medium"
+        >
+          Retry
+        </button>
+      </section>
     );
   }
 
@@ -46,38 +92,17 @@ export default function Usage() {
   }
 
   return (
-    <section className="p-4 sm:p-6 md:p-8 border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4">Usage Statistics</h2>
-
-        <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
-          <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-800 mb-2">Weekly Usage</h3>
-            <div className="space-y-1 text-sm text-blue-700">
-              <p>
-                <span className="font-medium">Used:</span> {usage.weeklyUsage}
-              </p>
-              <p>
-                <span className="font-medium">Limit:</span> {usage.weeklyLimit}
-              </p>
-            </div>
-          </div>
-
-          <div className="border border-purple-200 bg-purple-50 rounded-lg p-4">
-            <h3 className="font-semibold text-purple-800 mb-2">
-              Monthly Usage
-            </h3>
-            <div className="space-y-1 text-sm text-purple-700">
-              <p>
-                <span className="font-medium">Used:</span> {usage.monthlyUsage}
-              </p>
-              <p>
-                <span className="font-medium">Limit:</span> {usage.monthlyLimit}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <section aria-label="Usage" className="flex gap-6">
+      <Meter
+        label="This week"
+        used={usage.weeklyUsage}
+        limit={usage.weeklyLimit}
+      />
+      <Meter
+        label="This month"
+        used={usage.monthlyUsage}
+        limit={usage.monthlyLimit}
+      />
     </section>
   );
 }
