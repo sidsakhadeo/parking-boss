@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
+import { describe, expect, it, mock } from "bun:test";
 import userEvent from "@testing-library/user-event";
 import Vehicle from "@/app/components/Vehicle";
 import { render, screen } from "@/test/utils/renderWithProviders";
@@ -22,7 +22,6 @@ describe("Vehicle", () => {
     );
 
     expect(screen.getByText("Jane's Model 3")).toBeInTheDocument();
-    expect(screen.getByText("Jane Doe")).toBeInTheDocument();
     expect(screen.getByText("ABC123")).toBeInTheDocument();
     expect(screen.getByText("Tesla Model 3")).toBeInTheDocument();
   });
@@ -56,7 +55,7 @@ describe("Vehicle", () => {
     expect(onReserve).toHaveBeenCalledWith("jane-tesla");
   });
 
-  it("disables the button and shows Reserving... when disabled", () => {
+  it("disables the button and shows Reserving when disabled", () => {
     const onReserve = mock();
     render(
       <Vehicle
@@ -68,19 +67,49 @@ describe("Vehicle", () => {
       />,
     );
 
-    const button = screen.getByRole("button", { name: "Reserving..." });
+    const button = screen.getByRole("button", { name: "Reserving" });
     expect(button).toBeDisabled();
 
     button.click();
     expect(onReserve).not.toHaveBeenCalled();
   });
 
-  describe("delete menu", () => {
-    afterEach(() => {
-      mock.restore();
-    });
+  it("shows Reserved instead of the Reserve button for a reserved vehicle", () => {
+    render(
+      <Vehicle
+        id="jane-tesla"
+        vehicle={vehicleData}
+        onReserve={() => {}}
+        onDelete={() => {}}
+        reserved={true}
+      />,
+    );
 
-    it("hides the delete option until the more-options menu is opened", async () => {
+    expect(screen.getByText("Reserved")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Reserve" }),
+    ).not.toBeInTheDocument();
+  });
+
+  describe("options sheet", () => {
+    const openSheet = async () => {
+      const user = userEvent.setup();
+      const onDelete = mock();
+      render(
+        <Vehicle
+          id="jane-tesla"
+          vehicle={vehicleData}
+          onReserve={() => {}}
+          onDelete={onDelete}
+        />,
+      );
+      await user.click(
+        screen.getByRole("button", { name: "More options for Jane's Model 3" }),
+      );
+      return { user, onDelete };
+    };
+
+    it("hides the delete option until the more-options button is tapped", async () => {
       const user = userEvent.setup();
       render(
         <Vehicle
@@ -92,62 +121,47 @@ describe("Vehicle", () => {
       );
 
       expect(
-        screen.queryByRole("menuitem", { name: "Delete vehicle" }),
+        screen.queryByRole("button", { name: "Delete vehicle" }),
       ).not.toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "More options" }));
+      await user.click(
+        screen.getByRole("button", { name: "More options for Jane's Model 3" }),
+      );
 
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByText(/Jane Doe/)).toBeInTheDocument();
       expect(
-        screen.getByRole("menuitem", { name: "Delete vehicle" }),
+        screen.getByRole("button", { name: "Delete vehicle" }),
       ).toBeInTheDocument();
     });
 
-    it("asks for confirmation and calls onDelete when confirmed", async () => {
-      spyOn(window, "confirm").mockReturnValue(true);
-      const user = userEvent.setup();
-      const onDelete = mock();
-      render(
-        <Vehicle
-          id="jane-tesla"
-          vehicle={vehicleData}
-          onReserve={() => {}}
-          onDelete={onDelete}
-        />,
-      );
+    it("calls onDelete and closes the sheet when Delete vehicle is tapped", async () => {
+      const { user, onDelete } = await openSheet();
 
-      await user.click(screen.getByRole("button", { name: "More options" }));
-      await user.click(
-        screen.getByRole("menuitem", { name: "Delete vehicle" }),
-      );
+      await user.click(screen.getByRole("button", { name: "Delete vehicle" }));
 
-      expect(window.confirm).toHaveBeenCalledWith(
-        "Delete Jane's Model 3? This cannot be undone.",
-      );
       expect(onDelete).toHaveBeenCalledWith("jane-tesla");
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
-    it("does not call onDelete when the confirmation is declined", async () => {
-      spyOn(window, "confirm").mockReturnValue(false);
-      const user = userEvent.setup();
-      const onDelete = mock();
-      render(
-        <Vehicle
-          id="jane-tesla"
-          vehicle={vehicleData}
-          onReserve={() => {}}
-          onDelete={onDelete}
-        />,
-      );
+    it("closes without deleting on Cancel", async () => {
+      const { user, onDelete } = await openSheet();
 
-      await user.click(screen.getByRole("button", { name: "More options" }));
-      await user.click(
-        screen.getByRole("menuitem", { name: "Delete vehicle" }),
-      );
+      await user.click(screen.getByRole("button", { name: "Cancel" }));
 
       expect(onDelete).not.toHaveBeenCalled();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
-    it("shows Deleting... and disables the menu item when deleteDisabled", async () => {
+    it("closes on Escape", async () => {
+      const { user } = await openSheet();
+
+      await user.keyboard("{Escape}");
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("shows Deleting... and disables the button when deleteDisabled", async () => {
       const user = userEvent.setup();
       render(
         <Vehicle
@@ -159,10 +173,13 @@ describe("Vehicle", () => {
         />,
       );
 
-      await user.click(screen.getByRole("button", { name: "More options" }));
+      await user.click(
+        screen.getByRole("button", { name: "More options for Jane's Model 3" }),
+      );
 
-      const menuItem = screen.getByRole("menuitem", { name: "Deleting..." });
-      expect(menuItem).toBeDisabled();
+      expect(
+        screen.getByRole("button", { name: "Deleting..." }),
+      ).toBeDisabled();
     });
   });
 });

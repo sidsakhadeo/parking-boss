@@ -6,12 +6,17 @@ import { getViewpoint } from "@/app/utils/viewpoint";
 import { API_DOMAIN } from "../constants";
 
 const RESERVE_URL = `https://${API_DOMAIN}/v1/permits/temporary`;
+const ALLOWED_DURATIONS = new Set(["PT1H", "PT2H", "PT4H"]);
 
 export async function POST(request: NextRequest) {
   try {
     const viewpoint = getViewpoint();
     const body = await request.json();
-    const { vehicle, notes, name } = body;
+    const { vehicle, notes, name, duration } = body;
+
+    if (duration !== undefined && !ALLOWED_DURATIONS.has(duration)) {
+      return NextResponse.json({ error: "Invalid duration" }, { status: 400 });
+    }
 
     const config = getConfig();
 
@@ -23,7 +28,7 @@ export async function POST(request: NextRequest) {
     reserveUrl.searchParams.append("token", config.token);
     reserveUrl.searchParams.append("vehicle", vehicle);
     reserveUrl.searchParams.append("space", config.space);
-    reserveUrl.searchParams.append("duration", config.duration);
+    reserveUrl.searchParams.append("duration", duration ?? config.duration);
     reserveUrl.searchParams.append("notes", notes);
     reserveUrl.searchParams.append("name", name);
     reserveUrl.searchParams.append("email", config.email);

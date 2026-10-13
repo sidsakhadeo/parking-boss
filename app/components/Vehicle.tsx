@@ -1,5 +1,6 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useState } from "react";
 import type { VehicleData } from "../utils/apiClient";
+import Sheet from "./Sheet";
 
 export type { VehicleData };
 
@@ -10,6 +11,7 @@ interface VehicleProps {
   onDelete: (vehicleId: string) => void;
   disabled?: boolean;
   deleteDisabled?: boolean;
+  reserved?: boolean;
 }
 
 const Vehicle = memo(function Vehicle({
@@ -19,93 +21,140 @@ const Vehicle = memo(function Vehicle({
   onDelete,
   disabled,
   deleteDisabled,
+  reserved,
 }: VehicleProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isMenuOpen) return;
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (!menuRef.current?.contains(e.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsMenuOpen(false);
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isMenuOpen]);
+  const closeMenu = () => setIsMenuOpen(false);
 
   const handleDelete = () => {
-    setIsMenuOpen(false);
-    if (confirm(`Delete ${vehicle.displayValue}? This cannot be undone.`)) {
-      onDelete(id);
-    }
+    closeMenu();
+    onDelete(id);
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-2">
-        <h2 className="text-lg sm:text-xl font-semibold">
+    <li className="flex min-h-19 items-center gap-2 border-b border-line">
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="truncate text-base font-medium">
           {vehicle.displayValue}
-        </h2>
-        <div className="relative" ref={menuRef}>
-          <button
-            type="button"
-            onClick={() => setIsMenuOpen((open) => !open)}
-            aria-label="More options"
-            aria-haspopup="menu"
-            aria-expanded={isMenuOpen}
-            className="text-gray-400 hover:text-[var(--foreground)] px-2 py-1 rounded-md leading-none text-xl"
+        </span>
+        <span className="truncate text-sm text-muted">
+          <span>{vehicle.vehicle || "N/A"}</span>
+          {" · "}
+          <span>{vehicle.notes}</span>
+        </span>
+      </div>
+
+      {reserved ? (
+        <span className="flex h-11 items-center gap-1.5 px-1.5 text-sm font-medium text-ok">
+          <svg
+            aria-hidden="true"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            &#8942;
-          </button>
-          {isMenuOpen && (
-            <div
-              role="menu"
-              className="absolute right-0 top-full mt-1 w-40 bg-[var(--background)] border border-gray-200 rounded-lg shadow-md z-10 overflow-hidden"
-            >
-              <button
-                type="button"
-                role="menuitem"
-                onClick={handleDelete}
-                disabled={deleteDisabled}
-                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+          </svg>
+          Reserved
+        </span>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onReserve(id)}
+          disabled={disabled}
+          className="flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-[15px] font-medium text-bg transition-opacity disabled:opacity-60"
+        >
+          {disabled ? (
+            <>
+              <svg
+                aria-hidden="true"
+                className="animate-spin"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
               >
-                {deleteDisabled ? "Deleting..." : "Delete vehicle"}
-              </button>
-            </div>
+                <path d="M12 3a9 9 0 1 0 9 9" />
+              </svg>
+              Reserving
+            </>
+          ) : (
+            "Reserve"
           )}
-        </div>
-      </div>
-      <div className="space-y-1 text-sm text-gray-400 mb-4">
-        <p>
-          <span className="font-medium">Owner:</span> {vehicle.name}
-        </p>
-        <p>
-          <span className="font-medium">License:</span>{" "}
-          {vehicle.vehicle || "N/A"}
-        </p>
-        <p>
-          <span className="font-medium">Vehicle:</span> {vehicle.notes}
-        </p>
-      </div>
+        </button>
+      )}
+
       <button
         type="button"
-        onClick={() => onReserve(id)}
-        disabled={disabled}
-        className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-colors touch-manipulation"
+        onClick={() => setIsMenuOpen(true)}
+        aria-label={`More options for ${vehicle.displayValue}`}
+        aria-haspopup="dialog"
+        className="-mr-2.5 flex h-11 w-10 items-center justify-center text-muted"
       >
-        {disabled ? "Reserving..." : "Reserve"}
+        <svg
+          aria-hidden="true"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <circle cx="12" cy="5.5" r="1.6" />
+          <circle cx="12" cy="12" r="1.6" />
+          <circle cx="12" cy="18.5" r="1.6" />
+        </svg>
       </button>
-    </div>
+
+      {isMenuOpen ? (
+        <Sheet
+          label={`Options for ${vehicle.displayValue}`}
+          onClose={closeMenu}
+        >
+          <div className="space-y-0.5 pb-3.5">
+            <p className="text-lg font-semibold tracking-tight">
+              {vehicle.displayValue}
+            </p>
+            <p className="text-sm text-muted">
+              {vehicle.vehicle || "N/A"} · {vehicle.notes} · {vehicle.name}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleteDisabled}
+            className="flex h-14 w-full items-center gap-3 border-t border-line text-left text-base text-danger disabled:opacity-50"
+          >
+            <svg
+              aria-hidden="true"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3" />
+            </svg>
+            {deleteDisabled ? "Deleting..." : "Delete vehicle"}
+          </button>
+          <button
+            type="button"
+            onClick={closeMenu}
+            className="mt-2 h-[52px] w-full rounded-2xl bg-field text-base font-medium"
+          >
+            Cancel
+          </button>
+        </Sheet>
+      ) : null}
+    </li>
   );
 });
 

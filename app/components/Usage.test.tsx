@@ -8,7 +8,9 @@ describe("Usage", () => {
 
     render(<Usage />);
 
-    expect(screen.getByText("Loading usage data...")).toBeInTheDocument();
+    expect(
+      screen.getByRole("status", { name: "Loading usage" }),
+    ).toBeInTheDocument();
   });
 
   it("renders usage data once loaded", async () => {
@@ -31,6 +33,9 @@ describe("Usage", () => {
     expect(screen.getByText("20")).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
     expect(screen.getByText("80")).toBeInTheDocument();
+    expect(screen.getByText("This week").parentElement).toHaveTextContent(
+      "This week5 / 20 hrs",
+    );
   });
 
   it("renders an error message when the fetch fails", async () => {
@@ -41,7 +46,7 @@ describe("Usage", () => {
     render(<Usage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Request failed/)).toBeInTheDocument();
+      expect(screen.getByText("Usage unavailable")).toBeInTheDocument();
     });
   });
 });
