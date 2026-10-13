@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "bun:test";
+import { NextRequest } from "next/server";
 import { DELETE, GET, POST } from "@/app/api/vehicles/route";
 import { getMockVehicles, setMockVehicles } from "@/test/mocks/store";
 
@@ -18,7 +19,7 @@ const fixtureVehicles = {
 };
 
 const jsonRequest = (body: unknown, method = "POST") =>
-  new Request("http://localhost/api/vehicles", {
+  new NextRequest("http://localhost/api/vehicles", {
     method,
     body: JSON.stringify(body),
   });

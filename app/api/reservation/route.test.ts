@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, spyOn } from "bun:test";
+import { NextRequest } from "next/server";
 import { DELETE, POST } from "@/app/api/reservation/route";
 import { setMockConfig } from "@/test/mocks/store";
 
@@ -14,7 +15,7 @@ const fixtureConfig = {
 };
 
 const jsonRequest = (body: unknown) =>
-  new Request("http://localhost/api/reservation", {
+  new NextRequest("http://localhost/api/reservation", {
     method: "POST",
     body: JSON.stringify(body),
   });
