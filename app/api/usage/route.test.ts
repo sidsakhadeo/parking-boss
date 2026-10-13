@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, spyOn } from "bun:test";
 import { GET } from "@/app/api/usage/route";
 import { setMockConfig } from "@/test/mocks/store";
+import { mockFetch } from "@/test/utils/mockFetch";
 
 const fixtureConfig = {
   email: "test@example.com",
@@ -34,7 +35,7 @@ describe("GET /api/usage", () => {
   });
 
   it("chains the auth-token and usage calls and buckets weekly/monthly limits", async () => {
-    spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    mockFetch(async (input) => {
       const url = input.toString();
       if (url.includes("/accounts/auth/tokens")) {
         return new Response(

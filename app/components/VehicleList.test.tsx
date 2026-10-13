@@ -1,6 +1,7 @@
 import { describe, expect, it, mock, spyOn } from "bun:test";
 import userEvent from "@testing-library/user-event";
 import VehicleList from "@/app/components/VehicleList";
+import { mockFetch } from "@/test/utils/mockFetch";
 import { render, screen, waitFor } from "@/test/utils/renderWithProviders";
 
 const fixtureVehicles = {
@@ -27,7 +28,7 @@ const mockVehicles = (vehicles: object = fixtureVehicles) =>
 
 describe("VehicleList", () => {
   it("shows a loading state before data arrives", () => {
-    spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}));
+    mockFetch(() => new Promise(() => {}));
 
     render(<VehicleList onAdd={() => {}} />);
 
@@ -145,7 +146,7 @@ describe("VehicleList", () => {
     const setup = () => {
       let resolveReservation: (() => void) | undefined;
       const reservationBodies: unknown[] = [];
-      spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
+      mockFetch(async (input, init) => {
         const url = input.toString();
         if (url.endsWith("/api/vehicles")) {
           return new Response(

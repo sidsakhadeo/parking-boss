@@ -1,10 +1,11 @@
 import { describe, expect, it, spyOn } from "bun:test";
 import Usage from "@/app/components/Usage";
+import { mockFetch } from "@/test/utils/mockFetch";
 import { render, screen, waitFor } from "@/test/utils/renderWithProviders";
 
 describe("Usage", () => {
   it("shows a loading state before data arrives", () => {
-    spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}));
+    mockFetch(() => new Promise(() => {}));
 
     render(<Usage />);
 

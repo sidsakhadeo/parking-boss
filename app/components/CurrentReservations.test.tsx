@@ -2,6 +2,7 @@ import { describe, expect, it, spyOn } from "bun:test";
 import userEvent from "@testing-library/user-event";
 import CurrentReservations from "@/app/components/CurrentReservations";
 import type { Reservation } from "@/app/utils/apiClient";
+import { mockFetch } from "@/test/utils/mockFetch";
 import { render, screen, waitFor } from "@/test/utils/renderWithProviders";
 
 const grace = { min: { local: "2026-07-11T09:00:00" } };
@@ -28,7 +29,7 @@ const reservations: Reservation[] = [
 
 describe("CurrentReservations", () => {
   it("shows a loading state before data arrives", () => {
-    spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}));
+    mockFetch(() => new Promise(() => {}));
 
     render(<CurrentReservations />);
 
@@ -82,7 +83,7 @@ describe("CurrentReservations", () => {
 
   describe("cancel all", () => {
     const setup = () => {
-      spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      mockFetch(async (input) => {
         const url = input.toString();
         if (url.endsWith("/api/reservations")) {
           return new Response(JSON.stringify({ reservations, count: 2 }));

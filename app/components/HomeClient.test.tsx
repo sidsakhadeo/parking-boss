@@ -1,6 +1,7 @@
 import { describe, expect, it, spyOn } from "bun:test";
 import userEvent from "@testing-library/user-event";
 import HomeClient from "@/app/components/HomeClient";
+import { mockFetch } from "@/test/utils/mockFetch";
 import { render, screen, waitFor } from "@/test/utils/renderWithProviders";
 
 describe("HomeClient", () => {
@@ -31,7 +32,7 @@ describe("HomeClient", () => {
   });
 
   it("marks vehicles that have an active reservation", async () => {
-    spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    mockFetch(async (input) => {
       const url = input.toString();
       if (url.endsWith("/api/vehicles")) {
         return new Response(
