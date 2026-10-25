@@ -10,7 +10,7 @@ interface AddVehicleModalProps {
 }
 
 const inputClass =
-  "h-[52px] w-full rounded-xl border border-line bg-surface px-4 text-base outline-none placeholder:text-muted focus:border-ink";
+  "h-13 w-full rounded-xl border border-line bg-surface px-4 text-base outline-none placeholder:text-muted focus:border-ink";
 
 const AddVehicleModal = memo(function AddVehicleModal({
   isOpen,
@@ -152,7 +152,7 @@ const AddVehicleModal = memo(function AddVehicleModal({
         <button
           type="submit"
           disabled={addVehicleMutation.isPending}
-          className="mt-8 h-[52px] w-full shrink-0 rounded-full bg-ink text-base font-medium text-bg disabled:opacity-60"
+          className="mt-8 h-13 w-full shrink-0 rounded-full bg-ink text-base font-medium text-bg disabled:opacity-60"
         >
           {addVehicleMutation.isPending ? "Adding..." : "Add vehicle"}
         </button>
