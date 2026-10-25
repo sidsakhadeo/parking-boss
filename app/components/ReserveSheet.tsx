@@ -51,7 +51,7 @@ export default function ReserveSheet({
         {DURATION_HOURS.map((h) => (
           <label
             key={h}
-            className="flex h-[72px] cursor-pointer flex-col items-center justify-center gap-0.5 rounded-2xl border border-line bg-surface has-checked:border-ink has-checked:bg-ink has-checked:text-bg has-focus-visible:ring-2 has-focus-visible:ring-ink has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-bg"
+            className="flex h-18 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-2xl border border-line bg-surface has-checked:border-ink has-checked:bg-ink has-checked:text-bg has-focus-visible:ring-2 has-focus-visible:ring-ink has-focus-visible:ring-offset-2 has-focus-visible:ring-offset-bg"
           >
             <input
               type="radio"
@@ -73,7 +73,7 @@ export default function ReserveSheet({
       <button
         type="button"
         onClick={() => onConfirm(hours)}
-        className="h-[52px] w-full rounded-full bg-ink text-base font-medium text-bg"
+        className="h-13 w-full rounded-full bg-ink text-base font-medium text-bg"
       >
         Reserve for {hoursLabel(hours)}
       </button>

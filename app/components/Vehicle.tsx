@@ -148,7 +148,7 @@ const Vehicle = memo(function Vehicle({
           <button
             type="button"
             onClick={closeMenu}
-            className="mt-2 h-[52px] w-full rounded-2xl bg-field text-base font-medium"
+            className="mt-2 h-13 w-full rounded-2xl bg-field text-base font-medium"
           >
             Cancel
           </button>

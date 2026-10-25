@@ -33,7 +33,7 @@ export default function CurrentReservations() {
         className="animate-pulse space-y-2.5"
       >
         <div className="h-3.5 w-24 rounded-md bg-field" />
-        <div className="h-[168px] rounded-2xl bg-field" />
+        <div className="h-42 rounded-2xl bg-field" />
       </section>
     );
   }
@@ -70,7 +70,7 @@ export default function CurrentReservations() {
       </div>
 
       {count === 0 ? (
-        <div className="flex h-[72px] items-center justify-center rounded-2xl border border-dashed border-line text-sm text-muted">
+        <div className="flex h-18 items-center justify-center rounded-2xl border border-dashed border-line text-sm text-muted">
           Nothing reserved right now
         </div>
       ) : (
@@ -118,7 +118,7 @@ export default function CurrentReservations() {
           <button
             type="button"
             onClick={handleCancelAll}
-            className="h-[52px] w-full rounded-full bg-danger text-base font-medium text-white"
+            className="h-13 w-full rounded-full bg-danger text-base font-medium text-white"
           >
             {count === 1
               ? "Cancel 1 reservation"

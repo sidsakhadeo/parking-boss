@@ -12,7 +12,7 @@ export default function SectionError({
   return (
     <div
       role="alert"
-      className="flex flex-col gap-3 rounded-2xl border border-line bg-surface px-[18px] py-4"
+      className="flex flex-col gap-3 rounded-2xl border border-line bg-surface px-4.5 py-4"
     >
       <div className="flex items-start gap-3">
         <svg

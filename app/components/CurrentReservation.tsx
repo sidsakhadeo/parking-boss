@@ -60,7 +60,7 @@ const CurrentReservation = memo(function CurrentReservation({
       : { label: "Upcoming", text: "text-muted", dot: "bg-muted" };
 
   return (
-    <div className="space-y-3.5 rounded-2xl border border-line bg-surface p-[18px]">
+    <div className="space-y-3.5 rounded-2xl border border-line bg-surface p-4.5">
       <div className="space-y-1.5">
         <div
           className={`flex items-center gap-2 text-[13px] font-medium ${status.text}`}
